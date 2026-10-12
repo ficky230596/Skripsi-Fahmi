@@ -1,0 +1,520 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto space-y-4">
+
+    <!-- HEADER -->
+    <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="min-w-0">
+                <p class="text-xs font-bold uppercase tracking-wider text-teal-700 mb-1">
+                    <i class="fa-solid fa-receipt mr-1"></i> Detail Pesanan
+                </p>
+                <h1 class="text-lg sm:text-2xl font-black text-slate-900 break-words">
+                    {{ order.order_number }}
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                    <i class="fa-regular fa-calendar mr-1"></i>
+                    {{ order.created_at.strftime('%d %B %Y, %H:%M') }}
+                </p>
+            </div>
+
+            <span class="inline-flex self-start sm:self-center items-center gap-2 px-3 py-2 rounded-xl bg-teal-50 border border-teal-100 text-teal-700 text-xs sm:text-sm font-bold">
+                <i class="fa-solid fa-circle-check"></i>
+                {{ order.order_status }}
+            </span>
+        </div>
+    </section>
+
+    <!-- MAIN GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
+
+        <!-- KOLOM UTAMA -->
+        <div class="lg:col-span-2 space-y-4">
+
+            <!-- ITEM PESANAN -->
+            <section class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-100">
+                    <div>
+                        <h2 class="font-black text-base text-slate-900">
+                            <i class="fa-solid fa-bag-shopping text-teal-700 mr-2"></i>
+                            Item Pesanan
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">Produk yang Anda pesan</p>
+                    </div>
+                    <span class="text-xs font-bold text-slate-500 bg-slate-100 rounded-lg px-2.5 py-1.5">
+                        {{ order.items|length }} item
+                    </span>
+                </div>
+
+                <div class="px-4 sm:px-5">
+                    {% for i in order.items %}
+                    <div class="flex items-center justify-between gap-3 py-3 {% if not loop.last %}border-b border-slate-100{% endif %}">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 shrink-0 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center">
+                                <i class="fa-solid fa-box"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-bold text-slate-800 break-words">
+                                    {{ i.product_name }}
+                                </p>
+                                <p class="text-xs text-slate-500 mt-1">
+                                    {{ i.qty }} × {{ rupiah(i.price) }}
+                                </p>
+                            </div>
+                        </div>
+                        <p class="shrink-0 text-sm font-black text-slate-900 text-right">
+                            {{ rupiah(i.subtotal) }}
+                        </p>
+                    </div>
+                    {% else %}
+                    <div class="py-8 text-center text-slate-400">
+                        <i class="fa-solid fa-box-open text-2xl mb-2"></i>
+                        <p class="text-sm">Belum ada item pesanan.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- PENGANTARAN -->
+            {% if order.delivery_method == 'delivery' %}
+            <section class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                <div class="px-4 sm:px-5 py-3 border-b border-slate-100 flex items-center justify-between gap-3">
+                    <div>
+                        <h2 class="font-black text-base text-slate-900">
+                            <i class="fa-solid fa-truck-fast text-teal-700 mr-2"></i>
+                            Informasi Pengantaran
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">Penerima dan lokasi tujuan</p>
+                    </div>
+                    <span class="text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-1.5 rounded-lg">
+                        <i class="fa-solid fa-location-dot mr-1"></i> Diantar
+                    </span>
+                </div>
+
+                <div class="p-4 sm:p-5 space-y-3">
+
+                    <!-- ALAMAT -->
+                    {% if order.delivery_address %}
+                    <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="w-9 h-9 shrink-0 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center">
+                            <i class="fa-solid fa-house"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">
+                                Alamat Pengantaran
+                            </p>
+                            <p class="text-sm text-slate-700 font-medium leading-relaxed whitespace-pre-line break-words">
+                                {{ order.delivery_address }}
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- PENERIMA -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="flex items-start gap-3 p-3 rounded-xl border border-slate-100">
+                            <div class="w-9 h-9 shrink-0 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                                    Nama Penerima
+                                </p>
+                                <p class="text-sm font-bold text-slate-800 break-words">
+                                    {{ order.recipient_name or '-' }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3 p-3 rounded-xl border border-slate-100">
+                            <div class="w-9 h-9 shrink-0 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                                    Nomor Telepon
+                                </p>
+                                {% if order.recipient_phone %}
+                                <a href="tel:{{ order.recipient_phone }}"
+                                   class="text-sm font-bold text-teal-700 hover:underline break-words">
+                                    {{ order.recipient_phone }}
+                                </a>
+                                {% else %}
+                                <p class="text-sm font-bold text-slate-800">-</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CATATAN -->
+                    <div class="flex items-start gap-3 p-3 rounded-xl bg-amber-50/70 border border-amber-100">
+                        <div class="w-9 h-9 shrink-0 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
+                            <i class="fa-solid fa-note-sticky"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">
+                                Catatan Pengantaran
+                            </p>
+                            <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-line break-words">
+                                {{ order.delivery_note or 'Tidak ada catatan pengantaran.' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- PETA -->
+                    {% if order.latitude is not none and order.longitude is not none %}
+                    <div class="pt-1">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <h3 class="text-sm font-bold text-slate-800">
+                                <i class="fa-solid fa-map-location-dot text-teal-700 mr-1"></i>
+                                Lokasi Tujuan
+                            </h3>
+                            <a href="https://www.openstreetmap.org/?mlat={{ order.latitude }}&mlon={{ order.longitude }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="inline-flex items-center gap-1.5 text-xs font-bold text-teal-700 hover:text-teal-900">
+                                <i class="fa-solid fa-up-right-from-square"></i>
+                                Buka Peta
+                            </a>
+                        </div>
+
+                        <div id="orderMap"
+                             class="w-full h-48 sm:h-56 rounded-xl overflow-hidden border border-slate-200">
+                        </div>
+
+                        <p class="flex items-start gap-2 text-[11px] text-slate-400 mt-2 break-all">
+                            <i class="fa-solid fa-crosshairs mt-0.5"></i>
+                            {{ order.latitude }}, {{ order.longitude }}
+                        </p>
+
+                        <div id="orderMapData"
+                             data-latitude="{{ order.latitude }}"
+                             data-longitude="{{ order.longitude }}"
+                             data-address="{{ order.delivery_address or '' }}"
+                             class="hidden">
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="flex items-center gap-3 rounded-xl bg-amber-50 border border-amber-200 p-3">
+                        <i class="fa-solid fa-map-location-dot text-amber-600 text-xl"></i>
+                        <div>
+                            <p class="text-sm font-bold text-amber-800">Lokasi belum tersedia</p>
+                            <p class="text-xs text-amber-700 mt-1">Koordinat pengantaran belum tersedia.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+            {% else %}
+            <!-- AMBIL DI PASAR -->
+            <section class="bg-white border border-slate-200 rounded-2xl p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 shrink-0 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-black text-sm text-slate-900">Ambil di Pasar</h2>
+                        <p class="text-xs text-slate-500 mt-1">
+                            Pesanan dapat diambil langsung di Pasar Remboken.
+                        </p>
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- RATING -->
+            {% if current_user.role == 'buyer'
+            and order.order_status == 'Selesai'
+            and not existing_rating %}
+            <form method="post"
+                  action="{{ url_for('rating', oid=order.id) }}"
+                  class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+
+                <div class="px-4 sm:px-5 py-3 border-b border-slate-100">
+                    <h2 class="font-black text-base text-slate-900">
+                        <i class="fa-solid fa-star text-amber-400 mr-2"></i>
+                        Beri Rating
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">Bagikan pengalaman Anda.</p>
+                </div>
+
+                <div class="p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-2">
+                            <i class="fa-solid fa-box text-teal-700 mr-1"></i>
+                            Rating Produk
+                        </label>
+                        <select name="product_rating" required
+                                class="w-full border border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:ring-2 focus:ring-teal-500 outline-none">
+                            <option value="5">★★★★★ - 5</option>
+                            <option value="4">★★★★ - 4</option>
+                            <option value="3">★★★ - 3</option>
+                            <option value="2">★★ - 2</option>
+                            <option value="1">★ - 1</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-2">
+                            <i class="fa-solid fa-store text-teal-700 mr-1"></i>
+                            Rating Pedagang
+                        </label>
+                        <select name="seller_rating" required
+                                class="w-full border border-slate-200 rounded-xl p-2.5 text-sm bg-white focus:ring-2 focus:ring-teal-500 outline-none">
+                            <option value="5">★★★★★ - 5</option>
+                            <option value="4">★★★★ - 4</option>
+                            <option value="3">★★★ - 3</option>
+                            <option value="2">★★ - 2</option>
+                            <option value="1">★ - 1</option>
+                        </select>
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-700 mb-2">
+                            <i class="fa-solid fa-comment-dots text-teal-700 mr-1"></i>
+                            Komentar
+                        </label>
+                        <textarea name="comment" rows="3"
+                                  class="w-full border border-slate-200 rounded-xl p-3 text-sm resize-y focus:ring-2 focus:ring-teal-500 outline-none"
+                                  placeholder="Bagaimana pengalaman Anda?"></textarea>
+                    </div>
+
+                    <button type="submit"
+                            class="sm:col-span-2 flex items-center justify-center gap-2 w-full bg-slate-900 hover:bg-slate-800 text-white p-3 rounded-xl text-sm font-bold transition">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        Kirim Rating
+                    </button>
+                </div>
+            </form>
+            {% endif %}
+
+        </div>
+
+        <!-- SIDEBAR -->
+        <aside class="space-y-4">
+
+            <!-- RINGKASAN -->
+            <section class="bg-white border border-slate-200 rounded-2xl overflow-hidden lg:sticky lg:top-4">
+                <div class="px-4 py-3 border-b border-slate-100">
+                    <h2 class="font-black text-base text-slate-900">
+                        <i class="fa-solid fa-receipt text-teal-700 mr-2"></i>
+                        Ringkasan Pesanan
+                    </h2>
+                </div>
+
+                <div class="p-4 space-y-3">
+                    <div class="flex items-center justify-between gap-3 text-sm">
+                        <span class="text-slate-500">
+                            <i class="fa-solid fa-basket-shopping mr-1"></i> Subtotal
+                        </span>
+                        <span class="font-bold text-slate-800 text-right">
+                            {{ rupiah(order.subtotal) }}
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-3 text-sm">
+                        <span class="text-slate-500">
+                            <i class="fa-solid fa-truck mr-1"></i> Pengantaran
+                        </span>
+                        <span class="font-bold text-slate-800 text-right">
+                            {% if order.delivery_method == 'delivery' %}
+                                {{ rupiah(order.delivery_fee) }}
+                            {% else %}
+                                Ambil di Pasar
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    {% if order.delivery_method == 'delivery' and order.distance_km %}
+                    <div class="flex items-center justify-between gap-3 text-sm">
+                        <span class="text-slate-500">
+                            <i class="fa-solid fa-route mr-1"></i> Jarak
+                        </span>
+                        <span class="font-bold text-slate-800">
+                            {{ '%.2f'|format(order.distance_km) }} km
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    <div class="border-t border-slate-100 pt-3 flex items-center justify-between gap-3">
+                        <span class="font-black text-slate-900">Total</span>
+                        <span class="text-lg sm:text-xl font-black text-teal-700 text-right">
+                            {{ rupiah(order.total) }}
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STATUS PEMBAYARAN -->
+            <section class="bg-white border border-slate-200 rounded-2xl p-4">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <i class="fa-solid fa-credit-card"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-black text-sm text-slate-900">Status Pembayaran</h2>
+                        <p class="text-xs text-slate-400">Informasi transaksi</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start justify-between gap-3 py-2">
+                    <span class="text-xs text-slate-500">Pembayaran</span>
+                    <span class="text-xs font-bold text-slate-800 text-right break-words">
+                        {{ order.payment_status }}
+                    </span>
+                </div>
+
+                <div class="border-t border-slate-100 pt-3 mt-1">
+                    <p class="text-xs text-slate-500 mb-1">
+                        <i class="fa-solid fa-wallet mr-1"></i> Status Dana Pedagang
+                    </p>
+                    <p class="text-sm font-bold text-slate-800">
+                        {{ order.seller_amount_status }}
+                    </p>
+                </div>
+            </section>
+
+            <!-- MENUNGGU PEMBAYARAN -->
+            {% if current_user.role == 'buyer'
+            and order.order_status == 'Menunggu Pembayaran' %}
+            <section class="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                <div class="flex items-start gap-3">
+                    <div class="w-9 h-9 shrink-0 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-sm text-amber-800">Menunggu Pembayaran</h3>
+                        <p class="text-xs text-amber-700 mt-1 leading-relaxed">
+                            Selesaikan pembayaran agar pesanan dapat diproses.
+                        </p>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('pay_order', oid=order.id) }}"
+                   class="flex items-center justify-center gap-2 w-full bg-teal-700 hover:bg-teal-800 text-white p-3 rounded-xl text-sm font-bold mt-4 transition">
+                    <i class="fa-solid fa-credit-card"></i>
+                    Bayar Sekarang
+                </a>
+
+                <form method="post"
+                      action="{{ url_for('cancel_order', oid=order.id) }}"
+                      class="mt-2">
+                    <button type="submit"
+                            data-confirm="Apakah Anda yakin ingin membatalkan pesanan ini?"
+                            class="flex items-center justify-center gap-2 w-full bg-red-600 hover:bg-red-700 text-white p-3 rounded-xl text-sm font-bold transition">
+                        <i class="fa-solid fa-xmark"></i>
+                        Batalkan Pesanan
+                    </button>
+                </form>
+            </section>
+            {% endif %}
+
+            <!-- SIAP DIAMBIL / DALAM PENGANTARAN -->
+            {% if current_user.role == 'buyer'
+            and order.order_status in ['Siap Diambil', 'Dalam Pengantaran'] %}
+            <section class="bg-teal-50 border border-teal-200 rounded-2xl p-4">
+                <div class="flex items-start gap-3 mb-4">
+                    <div class="w-9 h-9 shrink-0 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center">
+                        {% if order.order_status == 'Dalam Pengantaran' %}
+                            <i class="fa-solid fa-truck-fast"></i>
+                        {% else %}
+                            <i class="fa-solid fa-box"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h3 class="font-black text-sm text-teal-800">
+                            {% if order.order_status == 'Dalam Pengantaran' %}
+                                Pesanan Sedang Diantar
+                            {% else %}
+                                Pesanan Siap Diambil
+                            {% endif %}
+                        </h3>
+                        <p class="text-xs text-teal-700 mt-1 leading-relaxed">
+                            {% if order.order_status == 'Dalam Pengantaran' %}
+                                Pesanan sedang menuju alamat Anda.
+                            {% else %}
+                                Pesanan sudah siap diambil di pasar.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <form method="post"
+                      action="{{ url_for('complete_order', oid=order.id) }}">
+                    <button type="submit"
+                            data-confirm="Tandai pesanan sudah diterima?"
+                            class="flex items-center justify-center gap-2 w-full bg-teal-700 hover:bg-teal-800 text-white p-3 rounded-xl text-sm font-bold transition">
+                        <i class="fa-solid fa-check-circle"></i>
+                        Pesanan Sudah Diterima
+                    </button>
+                </form>
+            </section>
+            {% endif %}
+
+        </aside>
+    </div>
+</div>
+
+<!-- LEAFLET MAP -->
+{% if order.delivery_method == 'delivery'
+and order.latitude is not none
+and order.longitude is not none %}
+
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const mapData = document.getElementById('orderMapData');
+    const mapElement = document.getElementById('orderMap');
+
+    if (!mapData || !mapElement || typeof L === 'undefined') {
+        return;
+    }
+
+    const latitude = parseFloat(mapData.dataset.latitude);
+    const longitude = parseFloat(mapData.dataset.longitude);
+    const address = mapData.dataset.address || 'Lokasi Pengantaran';
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        return;
+    }
+
+    const map = L.map(mapElement, {
+        scrollWheelZoom: false
+    }).setView([latitude, longitude], 16);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const popup = document.createElement('div');
+    const title = document.createElement('strong');
+    title.textContent = 'Lokasi Pengantaran';
+
+    const addressText = document.createElement('div');
+    addressText.textContent = address;
+    addressText.className = 'mt-1';
+
+    popup.appendChild(title);
+    popup.appendChild(addressText);
+
+    L.marker([latitude, longitude])
+        .addTo(map)
+        .bindPopup(popup)
+        .openPopup();
+
+    requestAnimationFrame(function () {
+        map.invalidateSize();
+    });
+});
+</script>
+
+{% endif %}
+
+{% endblock %}

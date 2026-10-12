@@ -1,0 +1,1425 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{{ title or 'Pasar Remboken' }}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pasar: '#0f766e'
+                    }
+                }
+            }
+        };
+    </script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- GLOBAL LOADING CSS -->
+    <style>
+        #globalLoading {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: rgba(248, 250, 252, 0.88);
+            backdrop-filter: blur(3px);
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        #globalLoading.loading-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .global-loading-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            max-width: calc(100vw - 2rem);
+            padding: 1.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.125rem;
+            background: #fff;
+            box-shadow: 0 10px 35px rgba(15, 23, 42, 0.12);
+        }
+
+        .global-loading-spinner {
+            width: 44px;
+            height: 44px;
+            border: 4px solid #ccfbf1;
+            border-top-color: #0f766e;
+            border-radius: 50%;
+            animation: globalSpin 0.75s linear infinite;
+        }
+
+        .global-loading-title {
+            color: #0f766e;
+            font-size: 15px;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .global-loading-text {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .button-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            margin-right: 7px;
+            vertical-align: -2px;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: globalSpin 0.7s linear infinite;
+        }
+
+        button.is-loading,
+        input.is-loading {
+            opacity: 0.75;
+            cursor: wait !important;
+        }
+
+        @keyframes globalSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #globalLoading {
+                transition: none;
+            }
+
+            .global-loading-spinner,
+            .button-spinner {
+                animation-duration: 1.5s;
+            }
+        }
+    </style>
+
+    {% block head %}{% endblock %}
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- GLOBAL LOADING -->
+    <div id="globalLoading" role="status" aria-live="polite" aria-hidden="false">
+        <div class="global-loading-content">
+            <div class="global-loading-spinner" aria-hidden="true"></div>
+
+            <p id="globalLoadingTitle" class="global-loading-title">
+                Memuat halaman...
+            </p>
+
+            <p id="globalLoadingText" class="global-loading-text">
+                Mohon tunggu sebentar.
+            </p>
+        </div>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+
+            <!-- LOGO -->
+            <a href="{{ url_for('home') }}" class="font-black text-xl text-teal-700 flex items-center">
+                <i class="fa-solid fa-store mr-2"></i>
+                <span>Pasar Remboken</span>
+            </a>
+
+            <!-- DESKTOP MENU -->
+            <div class="hidden md:flex items-center gap-2 text-sm font-semibold">
+
+                <a href="{{ url_for('catalog') }}" class="px-3 py-2 rounded-xl transition
+                    {% if request.endpoint == 'catalog' %}
+                        bg-teal-100 text-teal-700
+                    {% else %}
+                        text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                    {% endif %}">
+                    <i class="fa-solid fa-store mr-1"></i>
+                    Katalog
+                </a>
+
+                {% if current_user.is_authenticated %}
+
+                {% if current_user.role == 'buyer' %}
+
+                <a href="{{ url_for('cart') }}" class="px-3 py-2 rounded-xl transition
+                            {% if request.endpoint == 'cart' %}
+                                bg-teal-100 text-teal-700
+                            {% else %}
+                                text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                            {% endif %}">
+                    <i class="fa-solid fa-cart-shopping mr-1"></i>
+                    Keranjang
+                </a>
+
+                <a href="{{ url_for('orders') }}" class="px-3 py-2 rounded-xl transition
+                            {% if request.endpoint in ['orders', 'order_detail', 'pay_order'] %}
+                                bg-teal-100 text-teal-700
+                            {% else %}
+                                text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                            {% endif %}">
+                    <i class="fa-solid fa-box mr-1"></i>
+                    Pesanan
+                </a>
+
+                <a href="{{ url_for('buyer_profile') }}" class="px-3 py-2 rounded-xl transition
+                            {% if request.endpoint == 'buyer_profile' %}
+                                bg-teal-100 text-teal-700
+                            {% else %}
+                                text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                            {% endif %}">
+                    <i class="fa-solid fa-user mr-1"></i>
+                    Profil
+                </a>
+
+                {% elif current_user.role == 'seller' %}
+
+                <a href="{{ url_for('seller_dashboard') }}" class="px-3 py-2 rounded-xl transition
+                            {% if request.endpoint == 'seller_dashboard' %}
+                                bg-teal-100 text-teal-700
+                            {% else %}
+                                text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                            {% endif %}">
+                    <i class="fa-solid fa-chart-line mr-1"></i>
+                    Dashboard
+                </a>
+
+                <a href="{{ url_for('seller_products') }}" class="px-3 py-2 rounded-xl transition
+                            {% if request.endpoint in ['seller_products', 'seller_product_create', 'seller_product_edit'] %}
+                                bg-teal-100 text-teal-700
+                            {% else %}
+                                text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                            {% endif %}">
+                    <i class="fa-solid fa-box-open mr-1"></i>
+                    Produk
+                </a>
+
+                <a href="{{ url_for('seller_orders') }}" class="px-3 py-2 rounded-xl transition
+                            {% if request.endpoint in ['seller_orders', 'seller_order_detail'] %}
+                                bg-teal-100 text-teal-700
+                            {% else %}
+                                text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                            {% endif %}">
+                    <i class="fa-solid fa-receipt mr-1"></i>
+                    Pesanan
+                </a>
+
+                <a href="{{ url_for('seller_balance') }}" class="px-3 py-2 rounded-xl transition
+                            {% if request.endpoint == 'seller_balance' %}
+                                bg-teal-100 text-teal-700
+                            {% else %}
+                                text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                            {% endif %}">
+                    <i class="fa-solid fa-wallet mr-1"></i>
+                    Saldo
+                </a>
+
+                <a href="{{ url_for('seller_profile') }}" class="px-3 py-2 rounded-xl transition
+                            {% if request.endpoint == 'seller_profile' %}
+                                bg-teal-100 text-teal-700
+                            {% else %}
+                                text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                            {% endif %}">
+                    <i class="fa-solid fa-user mr-1"></i>
+                    Profil
+                </a>
+
+                {% else %}
+
+                <a href="{{ url_for('admin_dashboard') }}" class="px-3 py-2 rounded-xl transition
+                            {% if request.endpoint == 'admin_dashboard' %}
+                                bg-teal-100 text-teal-700
+                            {% else %}
+                                text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                            {% endif %}">
+                    <i class="fa-solid fa-gauge-high mr-1"></i>
+                    Admin
+                </a>
+
+                <a href="{{ url_for('admin_sellers') }}" class="px-3 py-2 rounded-xl transition
+                            {% if request.endpoint in ['admin_sellers', 'admin_seller_detail'] %}
+                                bg-teal-100 text-teal-700
+                            {% else %}
+                                text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                            {% endif %}">
+                    <i class="fa-solid fa-users mr-1"></i>
+                    Pedagang
+                </a>
+
+                <a href="{{ url_for('admin_reports') }}" class="px-3 py-2 rounded-xl transition
+                            {% if request.endpoint in ['admin_reports', 'admin_report'] %}
+                                bg-teal-100 text-teal-700
+                            {% else %}
+                                text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                            {% endif %}">
+                    <i class="fa-solid fa-chart-column mr-1"></i>
+                    Laporan
+                </a>
+
+                {% endif %}
+
+                <!-- NOTIFICATIONS DESKTOP -->
+                <div class="relative" id="notificationWrapper">
+                    <button type="button" id="notificationBtn" aria-label="Notifikasi" aria-expanded="false"
+                        aria-controls="notificationPanel" class="relative px-3 py-2 rounded-xl transition
+                            {% if request.endpoint == 'notifications' %}
+                                bg-teal-100 text-teal-700
+                            {% else %}
+                                text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                            {% endif %}">
+
+                        <i class="fa-regular fa-bell"></i>
+
+                        <span id="notificationBadge" class="absolute -top-1 right-0 bg-red-500 text-white
+                                text-[10px] rounded-full px-1.5 min-w-[18px]
+                                text-center border-2 border-white
+                                {% if not unread_count %}hidden{% endif %}">
+                            {{ unread_count or '' }}
+                        </span>
+                    </button>
+
+                    <!-- NOTIFICATION PANEL -->
+                    <div id="notificationPanel" class="hidden absolute right-0 top-full mt-3
+                            w-80 sm:w-96 max-w-[calc(100vw-2rem)]
+                            bg-white border border-slate-200 rounded-2xl
+                            shadow-xl z-[100] overflow-hidden">
+
+                        <div class="flex items-center justify-between px-4 py-4 border-b border-slate-100">
+                            <div>
+                                <h3 class="font-black text-slate-800">
+                                    Notifikasi
+                                </h3>
+                                <p class="text-xs text-slate-500 mt-1">
+                                    Notifikasi terbaru Anda
+                                </p>
+                            </div>
+
+                            <i class="fa-regular fa-bell text-teal-700 text-lg"></i>
+                        </div>
+
+                        <div id="notificationList" class="max-h-80 overflow-y-auto">
+                            <div class="p-6 text-center text-slate-400">
+                                <i class="fa-solid fa-spinner fa-spin text-xl"></i>
+                                <p class="text-sm mt-2">
+                                    Memuat notifikasi...
+                                </p>
+                            </div>
+                        </div>
+
+                        <a href="{{ url_for('notifications') }}" class="block text-center px-4 py-3
+                                text-sm font-bold text-teal-700 bg-slate-50
+                                hover:bg-teal-50 border-t border-slate-100 transition">
+                            Lihat semua notifikasi
+                            <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- LOGOUT DESKTOP -->
+                <a href="{{ url_for('logout') }}" class="js-logout px-3 py-2 rounded-xl
+                        text-red-600 hover:bg-red-50 transition">
+                    <i class="fa-solid fa-right-from-bracket mr-1"></i>
+                    Keluar
+                </a>
+
+                {% else %}
+
+                <a href="{{ url_for('login') }}" class="px-3 py-2 rounded-xl transition
+                        {% if request.endpoint == 'login' %}
+                            bg-teal-100 text-teal-700
+                        {% else %}
+                            text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                        {% endif %}">
+                    <i class="fa-solid fa-right-to-bracket mr-1"></i>
+                    Masuk
+                </a>
+
+                <a href="{{ url_for('register') }}" class="px-4 py-2 rounded-xl transition
+                        {% if request.endpoint == 'register' %}
+                            bg-teal-800 text-white
+                        {% else %}
+                            bg-teal-700 hover:bg-teal-800 text-white
+                        {% endif %}">
+                    <i class="fa-solid fa-user-plus mr-1"></i>
+                    Daftar
+                </a>
+
+                {% endif %}
+            </div>
+
+            <!-- MOBILE BUTTON -->
+            <button id="menuBtn" type="button" class="md:hidden w-10 h-10 rounded-xl text-xl
+                text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition" aria-label="Buka menu"
+                aria-expanded="false" aria-controls="mobileMenu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- MOBILE MENU -->
+        <div id="mobileMenu" class="hidden md:hidden border-t border-slate-200 p-4 bg-white space-y-1 text-sm">
+
+            <a href="{{ url_for('catalog') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition
+                {% if request.endpoint == 'catalog' %}
+                    bg-teal-100 text-teal-700 font-bold
+                {% else %}
+                    text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                {% endif %}">
+                <i class="fa-solid fa-store w-5 text-center"></i>
+                Katalog
+            </a>
+
+            {% if current_user.is_authenticated %}
+
+            {% if current_user.role == 'buyer' %}
+
+            <a href="{{ url_for('cart') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition
+                        {% if request.endpoint == 'cart' %}
+                            bg-teal-100 text-teal-700 font-bold
+                        {% else %}
+                            text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                        {% endif %}">
+                <i class="fa-solid fa-cart-shopping w-5 text-center"></i>
+                Keranjang
+            </a>
+
+            <a href="{{ url_for('orders') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition
+                        {% if request.endpoint in ['orders', 'order_detail', 'pay_order'] %}
+                            bg-teal-100 text-teal-700 font-bold
+                        {% else %}
+                            text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                        {% endif %}">
+                <i class="fa-solid fa-box w-5 text-center"></i>
+                Pesanan
+            </a>
+
+            <a href="{{ url_for('buyer_profile') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition
+                        {% if request.endpoint == 'buyer_profile' %}
+                            bg-teal-100 text-teal-700 font-bold
+                        {% else %}
+                            text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                        {% endif %}">
+                <i class="fa-solid fa-user w-5 text-center"></i>
+                Profil
+            </a>
+
+            {% elif current_user.role == 'seller' %}
+
+            <a href="{{ url_for('seller_dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition
+                        {% if request.endpoint == 'seller_dashboard' %}
+                            bg-teal-100 text-teal-700 font-bold
+                        {% else %}
+                            text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                        {% endif %}">
+                <i class="fa-solid fa-chart-line w-5 text-center"></i>
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('seller_products') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition
+                        {% if request.endpoint in ['seller_products', 'seller_product_create', 'seller_product_edit'] %}
+                            bg-teal-100 text-teal-700 font-bold
+                        {% else %}
+                            text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                        {% endif %}">
+                <i class="fa-solid fa-box-open w-5 text-center"></i>
+                Produk
+            </a>
+
+            <a href="{{ url_for('seller_orders') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition
+                        {% if request.endpoint in ['seller_orders', 'seller_order_detail'] %}
+                            bg-teal-100 text-teal-700 font-bold
+                        {% else %}
+                            text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                        {% endif %}">
+                <i class="fa-solid fa-receipt w-5 text-center"></i>
+                Pesanan
+            </a>
+
+            <a href="{{ url_for('seller_balance') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition
+                        {% if request.endpoint == 'seller_balance' %}
+                            bg-teal-100 text-teal-700 font-bold
+                        {% else %}
+                            text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                        {% endif %}">
+                <i class="fa-solid fa-wallet w-5 text-center"></i>
+                Saldo
+            </a>
+
+            <a href="{{ url_for('seller_profile') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition
+                        {% if request.endpoint == 'seller_profile' %}
+                            bg-teal-100 text-teal-700 font-bold
+                        {% else %}
+                            text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                        {% endif %}">
+                <i class="fa-solid fa-user w-5 text-center"></i>
+                Profil
+            </a>
+
+            {% else %}
+
+            <a href="{{ url_for('admin_dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition
+                        {% if request.endpoint == 'admin_dashboard' %}
+                            bg-teal-100 text-teal-700 font-bold
+                        {% else %}
+                            text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                        {% endif %}">
+                <i class="fa-solid fa-gauge-high w-5 text-center"></i>
+                Admin
+            </a>
+
+            <a href="{{ url_for('admin_sellers') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition
+                        {% if request.endpoint in ['admin_sellers', 'admin_seller_detail'] %}
+                            bg-teal-100 text-teal-700 font-bold
+                        {% else %}
+                            text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                        {% endif %}">
+                <i class="fa-solid fa-users w-5 text-center"></i>
+                Pedagang
+            </a>
+
+            <a href="{{ url_for('admin_reports') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition
+                        {% if request.endpoint in ['admin_reports', 'admin_report'] %}
+                            bg-teal-100 text-teal-700 font-bold
+                        {% else %}
+                            text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                        {% endif %}">
+                <i class="fa-solid fa-chart-column mr-1"></i>
+                Laporan
+            </a>
+
+            {% endif %}
+
+            <!-- NOTIFICATIONS MOBILE -->
+            <a href="{{ url_for('notifications') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition
+                    {% if request.endpoint == 'notifications' %}
+                        bg-teal-100 text-teal-700 font-bold
+                    {% else %}
+                        text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                    {% endif %}">
+                <i class="fa-regular fa-bell w-5 text-center"></i>
+                <span class="flex-1">Notifikasi</span>
+
+                <span id="mobileNotificationBadge" class="bg-red-500 text-white text-xs rounded-full
+                        px-2 py-0.5 {% if not unread_count %}hidden{% endif %}">
+                    {{ unread_count or '' }}
+                </span>
+            </a>
+
+            <a href="{{ url_for('logout') }}" class="js-logout flex items-center gap-3 px-4 py-3 rounded-xl
+                    text-red-600 hover:bg-red-50 transition">
+                <i class="fa-solid fa-right-from-bracket w-5 text-center"></i>
+                Keluar
+            </a>
+
+            {% else %}
+
+            <a href="{{ url_for('login') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition
+                    {% if request.endpoint == 'login' %}
+                        bg-teal-100 text-teal-700 font-bold
+                    {% else %}
+                        text-slate-600 hover:bg-teal-50 hover:text-teal-700
+                    {% endif %}">
+                <i class="fa-solid fa-right-to-bracket w-5 text-center"></i>
+                Masuk
+            </a>
+
+            <a href="{{ url_for('register') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition
+                    {% if request.endpoint == 'register' %}
+                        bg-teal-100 text-teal-700 font-bold
+                    {% else %}
+                        text-teal-700 hover:bg-teal-50
+                    {% endif %}">
+                <i class="fa-solid fa-user-plus w-5 text-center"></i>
+                Daftar
+            </a>
+
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-1">
+
+        <!-- FLASH MESSAGE -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+        <div id="flash-message-{{ loop.index }}" data-category="{{ cat }}" data-message="{{ msg|e }}" class="hidden">
+        </div>
+        {% endfor %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-300 mt-auto">
+        <div class="max-w-7xl mx-auto px-4">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 py-10">
+
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-11 h-11 rounded-xl bg-teal-700 text-white flex items-center justify-center">
+                            <i class="fa-solid fa-store text-lg"></i>
+                        </div>
+
+                        <div>
+                            <h3 class="text-lg font-black text-white">
+                                Pasar Remboken
+                            </h3>
+                            <p class="text-xs text-slate-400">
+                                Pasar Lokal &amp; UMKM
+                            </p>
+                        </div>
+                    </div>
+
+                    <p class="text-sm text-slate-400 leading-relaxed max-w-sm">
+                        Platform digital untuk membantu masyarakat menemukan,
+                        membeli, dan mendukung berbagai produk lokal dari
+                        pedagang Pasar Remboken.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-bold text-white mb-4">
+                        <i class="fa-solid fa-compass text-teal-400 mr-2"></i>
+                        Navigasi
+                    </h4>
+
+                    <div class="space-y-3 text-sm">
+                        <a href="{{ url_for('home') }}"
+                            class="flex items-center gap-2 text-slate-400 hover:text-teal-400 transition">
+                            <i class="fa-solid fa-house w-4"></i>
+                            Beranda
+                        </a>
+
+                        <a href="{{ url_for('catalog') }}"
+                            class="flex items-center gap-2 text-slate-400 hover:text-teal-400 transition">
+                            <i class="fa-solid fa-store w-4"></i>
+                            Katalog Produk
+                        </a>
+
+                        {% if current_user.is_authenticated and current_user.role == 'buyer' %}
+                        <a href="{{ url_for('cart') }}"
+                            class="flex items-center gap-2 text-slate-400 hover:text-teal-400 transition">
+                            <i class="fa-solid fa-cart-shopping w-4"></i>
+                            Keranjang
+                        </a>
+
+                        <a href="{{ url_for('orders') }}"
+                            class="flex items-center gap-2 text-slate-400 hover:text-teal-400 transition">
+                            <i class="fa-solid fa-box w-4"></i>
+                            Pesanan
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-sm font-bold text-white mb-4">
+                        <i class="fa-solid fa-circle-info text-teal-400 mr-2"></i>
+                        Tentang Platform
+                    </h4>
+
+                    <div class="space-y-3 text-sm text-slate-400">
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-location-dot text-teal-400 mt-1 w-4"></i>
+                            <span>
+                                Pasar Remboken,<br>
+                                Kecamatan Remboken,<br>
+                                Kabupaten Minahasa
+                            </span>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-shield-halved text-teal-400 w-4"></i>
+                            <span>Transaksi aman dan terorganisir</span>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-truck text-teal-400 w-4"></i>
+                            <span>Pilihan pengambilan dan pengantaran</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-800 py-5">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+                    <p class="text-slate-500 text-center md:text-left">
+                        © 2026
+                        <span class="text-slate-300 font-semibold">Pasar Remboken</span>.
+                        Semua hak dilindungi.
+                    </p>
+
+                    <div class="flex items-center gap-2 text-slate-500">
+                        <i class="fa-solid fa-heart text-teal-500"></i>
+                        <span>Mendukung Produk Lokal &amp; UMKM</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MOBILE MENU SCRIPT -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const menuBtn = document.getElementById('menuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+
+            if (menuBtn && mobileMenu) {
+                menuBtn.addEventListener('click', function () {
+                    mobileMenu.classList.toggle('hidden');
+
+                    const isOpen = !mobileMenu.classList.contains('hidden');
+                    const icon = menuBtn.querySelector('i');
+
+                    menuBtn.setAttribute('aria-expanded', String(isOpen));
+
+                    if (icon) {
+                        icon.classList.toggle('fa-bars', !isOpen);
+                        icon.classList.toggle('fa-xmark', isOpen);
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- NOTIFICATION PANEL SCRIPT -->
+    {% if current_user.is_authenticated %}
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const wrapper = document.getElementById('notificationWrapper');
+            const button = document.getElementById('notificationBtn');
+            const panel = document.getElementById('notificationPanel');
+            const list = document.getElementById('notificationList');
+
+            const previewUrl = "{{ url_for('notifications_preview') }}";
+            const readUrl = "{{ url_for('notifications_read') }}";
+            const streamUrl = "{{ url_for('notifications_stream') }}";
+
+            let loaded = false;
+            let loadingNotifications = false;
+            let notificationFetching = false;
+            let knownNotificationIds = new Set();
+            let notificationStream = null;
+            let fallbackTimer = null;
+
+            // Memperbarui badge desktop dan mobile.
+            function updateNotificationBadge(count) {
+                const unread = Math.max(0, Number(count) || 0);
+
+                [
+                    document.getElementById('notificationBadge'),
+                    document.getElementById('mobileNotificationBadge')
+                ].forEach(function (badge) {
+                    if (!badge) return;
+
+                    badge.textContent = unread > 0 ? String(unread) : '';
+                    badge.classList.toggle('hidden', unread === 0);
+                });
+            }
+
+            // Pastikan elemen notifikasi tersedia.
+            if (!wrapper || !button || !panel || !list) return;
+
+            function closePanel() {
+                panel.classList.add('hidden');
+                button.setAttribute('aria-expanded', 'false');
+            }
+
+            function showLoading() {
+                list.replaceChildren();
+
+                const container = document.createElement('div');
+                container.className = 'p-6 text-center text-slate-400';
+
+                const icon = document.createElement('i');
+                icon.className = 'fa-solid fa-spinner fa-spin text-xl';
+
+                const text = document.createElement('p');
+                text.className = 'text-sm mt-2';
+                text.textContent = 'Memuat notifikasi...';
+
+                container.append(icon, text);
+                list.appendChild(container);
+            }
+
+            function showError() {
+                list.replaceChildren();
+
+                const text = document.createElement('p');
+                text.className = 'p-5 text-sm text-red-500 text-center';
+                text.textContent =
+                    'Notifikasi gagal dimuat. Silakan coba kembali.';
+
+                list.appendChild(text);
+            }
+
+            // Menampilkan daftar notifikasi.
+            function renderNotifications(notifications) {
+                list.replaceChildren();
+
+                if (!notifications.length) {
+                    const empty = document.createElement('div');
+                    empty.className = 'p-6 text-center';
+
+                    const icon = document.createElement('i');
+                    icon.className =
+                        'fa-regular fa-bell-slash text-3xl text-slate-300';
+
+                    const text = document.createElement('p');
+                    text.className = 'text-sm text-slate-500 mt-3';
+                    text.textContent = 'Belum ada notifikasi.';
+
+                    empty.append(icon, text);
+                    list.appendChild(empty);
+                    return;
+                }
+
+                notifications.forEach(function (notification) {
+                    const link = document.createElement('a');
+
+                    link.href =
+                        notification.url || "{{ url_for('notifications') }}";
+
+                    link.className =
+                        'flex items-start gap-3 p-4 border-b border-slate-100 ' +
+                        'hover:bg-teal-50 transition';
+
+                    if (!notification.is_read) {
+                        link.classList.add('bg-teal-50/50');
+                    }
+
+                    const iconWrapper = document.createElement('span');
+                    iconWrapper.className =
+                        'w-10 h-10 shrink-0 rounded-xl bg-teal-100 ' +
+                        'text-teal-700 flex items-center justify-center';
+
+                    const icon = document.createElement('i');
+                    icon.className = 'fa-regular fa-bell';
+
+                    iconWrapper.appendChild(icon);
+
+                    const content = document.createElement('div');
+                    content.className = 'min-w-0 flex-1';
+
+                    const title = document.createElement('p');
+                    title.className = 'text-sm font-bold text-slate-800';
+                    title.textContent = notification.title || 'Notifikasi';
+
+                    const message = document.createElement('p');
+                    message.className =
+                        'text-xs text-slate-500 mt-1 line-clamp-2';
+                    message.textContent = notification.message || '';
+
+                    const date = document.createElement('p');
+                    date.className = 'text-[11px] text-slate-400 mt-2';
+                    date.textContent = notification.created_at || '';
+
+                    content.append(title, message, date);
+                    link.append(iconWrapper, content);
+
+                    if (!notification.is_read) {
+                        const dot = document.createElement('span');
+                        dot.className =
+                            'w-2 h-2 rounded-full bg-teal-600 mt-2 shrink-0';
+
+                        link.appendChild(dot);
+                    }
+
+                    list.appendChild(link);
+                });
+            }
+
+            // Mengambil data terbaru dari server.
+            async function fetchNotifications(showNewNotification) {
+                if (notificationFetching) return null;
+
+                notificationFetching = true;
+
+                try {
+                    const response = await fetch(previewUrl, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        cache: 'no-store'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Gagal mengambil notifikasi.');
+                    }
+
+                    const data = await response.json();
+
+                    const notifications = Array.isArray(data.notifications)
+                        ? data.notifications
+                        : [];
+
+                    updateNotificationBadge(data.unread_count);
+
+                    const newNotifications = [];
+
+                    notifications.forEach(function (item) {
+                        const id = String(item.id);
+
+                        if (!knownNotificationIds.has(id)) {
+                            knownNotificationIds.add(id);
+
+                            if (showNewNotification && !item.is_read) {
+                                newNotifications.push(item);
+                            }
+                        }
+                    });
+
+                    // Menampilkan popup untuk notifikasi baru.
+                    if (
+                        showNewNotification &&
+                        typeof Swal !== 'undefined'
+                    ) {
+                        newNotifications.forEach(function (item) {
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'info',
+                                title: item.title || 'Notifikasi baru',
+                                text: item.message || '',
+                                showConfirmButton: false,
+                                timer: 4500,
+                                timerProgressBar: true
+                            });
+                        });
+                    }
+
+                    // Perbarui daftar jika panel sedang terbuka.
+                    if (!panel.classList.contains('hidden')) {
+                        renderNotifications(notifications);
+                        loaded = true;
+                    }
+
+                    return data;
+
+                } catch (error) {
+                    console.error(
+                        'Gagal memperbarui notifikasi:',
+                        error
+                    );
+
+                    return null;
+
+                } finally {
+                    notificationFetching = false;
+                }
+            }
+
+            // Memuat notifikasi saat panel dibuka.
+            async function loadNotifications() {
+                if (loaded || loadingNotifications) return;
+
+                loadingNotifications = true;
+                showLoading();
+
+                try {
+                    const data = await fetchNotifications(false);
+
+                    if (data) {
+                        renderNotifications(
+                            Array.isArray(data.notifications)
+                                ? data.notifications
+                                : []
+                        );
+
+                        loaded = true;
+                    } else {
+                        showError();
+                    }
+                } finally {
+                    loadingNotifications = false;
+                }
+            }
+
+            // Tombol notifikasi desktop.
+            button.addEventListener('click', async function (event) {
+                event.stopPropagation();
+
+                const opening = panel.classList.contains('hidden');
+
+                panel.classList.toggle('hidden');
+                button.setAttribute('aria-expanded', String(opening));
+
+                if (!opening) return;
+
+                await loadNotifications();
+
+                try {
+                    const response = await fetch(readUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        updateNotificationBadge(0);
+                        loaded = false;
+
+                        const data = await fetchNotifications(false);
+
+                        if (data) {
+                            renderNotifications(
+                                Array.isArray(data.notifications)
+                                    ? data.notifications
+                                    : []
+                            );
+
+                            loaded = true;
+                        }
+                    }
+                } catch (error) {
+                    console.error(
+                        'Gagal memperbarui status notifikasi:',
+                        error
+                    );
+                }
+            });
+
+            // Tutup panel ketika pengguna mengeklik di luar panel.
+            document.addEventListener('click', function (event) {
+                if (!wrapper.contains(event.target)) {
+                    closePanel();
+                }
+            });
+
+            // Tutup panel menggunakan tombol Escape.
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') {
+                    closePanel();
+                }
+            });
+
+            // Polling cadangan jika koneksi SSE gagal.
+            function startFallbackPolling() {
+                if (fallbackTimer) return;
+
+                fallbackTimer = setInterval(async function () {
+                    const data = await fetchNotifications(true);
+
+                    if (
+                        data &&
+                        notificationStream &&
+                        notificationStream.readyState === EventSource.OPEN
+                    ) {
+                        clearInterval(fallbackTimer);
+                        fallbackTimer = null;
+                    }
+                }, 5000);
+            }
+
+            // Menghentikan polling cadangan.
+            function stopFallbackPolling() {
+                if (fallbackTimer) {
+                    clearInterval(fallbackTimer);
+                    fallbackTimer = null;
+                }
+            }
+
+            // Ambil data awal agar notifikasi lama tidak dianggap baru.
+            fetchNotifications(false).then(function () {
+                if (typeof EventSource === 'undefined') {
+                    console.error(
+                        'Browser tidak mendukung Server-Sent Events.'
+                    );
+
+                    // Tetap perbarui notifikasi melalui polling.
+                    startFallbackPolling();
+                    return;
+                }
+
+                notificationStream = new EventSource(streamUrl);
+
+                // Event ketika server mengirim pembaruan notifikasi.
+                notificationStream.addEventListener(
+                    'notifications',
+                    function (event) {
+                        let data;
+
+                        try {
+                            data = JSON.parse(event.data);
+                        } catch (error) {
+                            console.error(
+                                'Data SSE tidak valid:',
+                                error
+                            );
+                            return;
+                        }
+
+                        updateNotificationBadge(data.unread_count);
+
+                        // Ambil detail terbaru dan tampilkan popup jika ada.
+                        fetchNotifications(true);
+                    }
+                );
+
+                // Jika SSE terputus, gunakan polling setiap 5 detik.
+                notificationStream.onerror = function () {
+                    console.warn(
+                        'Koneksi SSE terputus. Browser mencoba menyambungkan kembali.'
+                    );
+
+                    startFallbackPolling();
+                };
+
+                // Saat SSE tersambung kembali, hentikan polling.
+                notificationStream.onopen = function () {
+                    console.info(
+                        'Koneksi SSE notifikasi berhasil.'
+                    );
+
+                    stopFallbackPolling();
+                };
+            });
+
+            // Bersihkan koneksi dan timer saat halaman ditinggalkan.
+            window.addEventListener('pagehide', function () {
+                if (notificationStream) {
+                    notificationStream.close();
+                    notificationStream = null;
+                }
+
+                stopFallbackPolling();
+            }, { once: true });
+        });
+    </script>
+
+    </script>
+    {% endif %}
+
+    <!-- GLOBAL LOADING, LOGOUT, FORM, NAVIGATION, FLASH MESSAGE -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const overlay = document.getElementById('globalLoading');
+            const titleElement = document.getElementById('globalLoadingTitle');
+            const textElement = document.getElementById('globalLoadingText');
+
+            let navigating = false;
+            let activeFetchRequests = 0;
+            let fetchLoadingTimer = null;
+
+            function showLoading(title, message) {
+                if (!overlay) return;
+
+                titleElement.textContent = title || 'Memproses data...';
+                textElement.textContent =
+                    message || 'Mohon tunggu sebentar.';
+
+                overlay.classList.remove('loading-hidden');
+                overlay.setAttribute('aria-hidden', 'false');
+            }
+
+            function hideLoading() {
+                if (!overlay) return;
+
+                overlay.classList.add('loading-hidden');
+                overlay.setAttribute('aria-hidden', 'true');
+            }
+
+            window.addEventListener('load', hideLoading, { once: true });
+
+            // KONFIRMASI LOGOUT
+            document.querySelectorAll('.js-logout').forEach(function (link) {
+                link.addEventListener('click', async function (event) {
+                    event.preventDefault();
+
+                    if (navigating) return;
+
+                    const logoutUrl = this.href;
+
+                    const result = await Swal.fire({
+                        icon: 'warning',
+                        title: 'Keluar dari akun?',
+                        text: 'Apakah Anda yakin ingin keluar dari akun Pasar Remboken?',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, Keluar',
+                        cancelButtonText: 'Batal',
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#64748b',
+                        reverseButtons: true,
+                        focusCancel: true
+                    });
+
+                    if (!result.isConfirmed) return;
+
+                    navigating = true;
+
+                    showLoading(
+                        'Sedang keluar...',
+                        'Mengakhiri sesi akun Anda.'
+                    );
+
+                    window.location.assign(logoutUrl);
+                });
+            });
+
+            // LOADING FORM SUBMIT
+            document.querySelectorAll('form').forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.hasAttribute('data-no-global-loading')) return;
+                    if (!form.checkValidity()) return;
+
+                    if (form.dataset.globalSubmitting === 'true') {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    form.dataset.globalSubmitting = 'true';
+
+                    showLoading(
+                        'Mengirim data...',
+                        'Data sedang diproses. Mohon tunggu.'
+                    );
+
+                    form.querySelectorAll(
+                        'button[type="submit"], input[type="submit"]'
+                    ).forEach(function (button) {
+                        if (button.hasAttribute('data-no-button-loading')) return;
+
+                        button.disabled = true;
+                        button.classList.add('is-loading');
+
+                        if (
+                            button.tagName === 'BUTTON' &&
+                            !button.querySelector('.button-spinner')
+                        ) {
+                            const spinner = document.createElement('span');
+                            spinner.className = 'button-spinner';
+                            spinner.setAttribute('aria-hidden', 'true');
+                            button.prepend(spinner);
+                        }
+                    });
+                });
+            });
+
+            // LOADING NAVIGASI INTERNAL
+            document.addEventListener('click', function (event) {
+                const link = event.target.closest('a[href]');
+
+                if (!link || event.defaultPrevented) return;
+
+                if (
+                    event.button !== 0 ||
+                    event.ctrlKey ||
+                    event.metaKey ||
+                    event.shiftKey ||
+                    event.altKey
+                ) return;
+
+                if (link.classList.contains('js-logout')) return;
+
+                if (
+                    link.hasAttribute('download') ||
+                    (link.target && link.target !== '_self')
+                ) return;
+
+                const href = link.getAttribute('href');
+
+                if (
+                    !href ||
+                    href.startsWith('#') ||
+                    href.startsWith('javascript:') ||
+                    href.startsWith('mailto:') ||
+                    href.startsWith('tel:')
+                ) return;
+
+                let destination;
+
+                try {
+                    destination = new URL(link.href, window.location.href);
+                } catch (error) {
+                    return;
+                }
+
+                if (destination.origin !== window.location.origin) return;
+
+                if (
+                    destination.pathname === window.location.pathname &&
+                    destination.search === window.location.search &&
+                    destination.hash
+                ) return;
+
+                if (navigating) {
+                    event.preventDefault();
+                    return;
+                }
+
+                navigating = true;
+
+                showLoading(
+                    'Membuka halaman...',
+                    'Mohon tunggu sebentar.'
+                );
+            });
+
+            // LOADING FETCH/AJAX
+            const originalFetch = window.fetch.bind(window);
+
+            window.fetch = async function (...args) {
+                const request = args[0];
+
+                const requestUrl = typeof request === 'string'
+                    ? request
+                    : (request && request.url) || '';
+
+                let parsedUrl;
+
+                try {
+                    parsedUrl = new URL(
+                        requestUrl,
+                        window.location.href
+                    );
+                } catch (error) {
+                    parsedUrl = null;
+                }
+
+                const isNotificationRequest = parsedUrl &&
+                    (
+                        parsedUrl.pathname.endsWith('/notifications/preview') ||
+                        parsedUrl.pathname.endsWith('/notifications_preview') ||
+                        parsedUrl.pathname.endsWith('/notifications/read') ||
+                        parsedUrl.pathname.endsWith('/notifications_read')
+                    );
+
+                if (!isNotificationRequest) {
+                    activeFetchRequests++;
+
+                    if (fetchLoadingTimer) {
+                        clearTimeout(fetchLoadingTimer);
+                    }
+
+                    fetchLoadingTimer = setTimeout(function () {
+                        if (activeFetchRequests > 0 && !navigating) {
+                            showLoading(
+                                'Memproses data...',
+                                'Sedang berkomunikasi dengan server.'
+                            );
+                        }
+                    }, 250);
+                }
+
+                try {
+                    return await originalFetch(...args);
+                } finally {
+                    if (!isNotificationRequest) {
+                        activeFetchRequests = Math.max(
+                            0,
+                            activeFetchRequests - 1
+                        );
+
+                        if (activeFetchRequests === 0) {
+                            if (fetchLoadingTimer) {
+                                clearTimeout(fetchLoadingTimer);
+                                fetchLoadingTimer = null;
+                            }
+
+                            if (!navigating) {
+                                hideLoading();
+                            }
+                        }
+                    }
+                }
+            };
+
+            // FLASH MESSAGE DARI FLASK
+            const flashMessages = document.querySelectorAll(
+                '[id^="flash-message-"]'
+            );
+
+            flashMessages.forEach(function (element) {
+                const category = element.dataset.category || 'error';
+                const message = element.dataset.message || '';
+
+                let icon = 'error';
+                let title = 'Perhatian';
+
+                if (category === 'success') {
+                    icon = 'success';
+                    title = 'Berhasil';
+                } else if (category === 'warning') {
+                    icon = 'warning';
+                    title = 'Peringatan';
+                } else if (category === 'info') {
+                    icon = 'info';
+                    title = 'Informasi';
+                }
+
+                Swal.fire({
+                    icon: icon,
+                    title: title,
+                    text: message,
+                    timer: 2200,
+                    timerProgressBar: true,
+                    showConfirmButton: false
+                });
+            });
+
+            // PULIHKAN UI SAAT KEMBALI KE HALAMAN
+            window.addEventListener('pageshow', function () {
+                navigating = false;
+                hideLoading();
+
+                document.querySelectorAll('form').forEach(function (form) {
+                    delete form.dataset.globalSubmitting;
+
+                    form.querySelectorAll(
+                        'button[type="submit"], input[type="submit"]'
+                    ).forEach(function (button) {
+                        button.disabled = false;
+                        button.classList.remove('is-loading');
+
+                        const spinner = button.querySelector('.button-spinner');
+                        if (spinner) spinner.remove();
+                    });
+                });
+            });
+        });
+    </script>
+
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+    {% block scripts %}{% endblock %}
+
+</body>
+
+</html>

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% block content %}<h2>Verifikasi Pedagang</h2>{% for m in merchants %}<div class="card mb-3">
+    <div class="card-body">
+        <h5>{{m.store_name}}</h5>
+        <p>{{m.user.name}} — {{m.user.email}}<br>NIK: {{m.nik}}<br>Status: <b>{{m.verification_status}}</b></p>{% if
+        m.ktp_file %}<a class="btn btn-sm btn-outline-secondary" target="_blank"
+            href="{{url_for('upload',name=m.ktp_file)}}">Lihat KTP</a>{% endif %}<form method="post"
+            action="{{url_for('verify_merchant',mid=m.id)}}" class="d-inline"><input type="hidden" name="status"
+                value="approved"><button class="btn btn-success btn-sm">Setujui</button></form>
+        <form method="post" action="{{url_for('verify_merchant',mid=m.id)}}" class="d-inline"><input type="hidden"
+                name="status" value="rejected"><button class="btn btn-danger btn-sm">Tolak</button></form>
+    </div>
+</div>{% else %}<p>Tidak ada pedagang.</p>{% endfor %}{% endblock %}

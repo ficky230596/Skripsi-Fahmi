@@ -1,0 +1,22 @@
+{% extends 'base.html' %}{% block content %}<h1 class="text-3xl font-black mb-5">Penarikan Dana</h1>
+<div class="space-y-3">{% for w in withdrawals %}<div
+                class="bg-white border rounded-2xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div><b>{{ w.seller.name }}</b>
+                        <p>{{ rupiah(w.amount) }} · {{ w.bank_name }} {{ w.bank_account }} · {{ w.account_name }}</p>
+                        <small class="text-slate-500">{{ w.requested_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                </div>
+                <div class="flex gap-2 items-center"><span class="font-bold">{{ w.status }}</span>{% if
+                        w.status=='pending' %}
+                        <form method="post"><input type="hidden" name="id" value="{{ w.id }}"><input type="hidden"
+                                        name="status" value="approved"><button
+                                        class="px-3 py-2 border rounded-xl">Setujui</button></form>
+                        <form method="post"><input type="hidden" name="id" value="{{ w.id }}"><input type="hidden"
+                                        name="status" value="paid"><button
+                                        class="px-3 py-2 bg-teal-700 text-white rounded-xl">Sudah Dibayar</button>
+                        </form>
+                        <form method="post"><input type="hidden" name="id" value="{{ w.id }}"><input type="hidden"
+                                        name="status" value="rejected"><button
+                                        class="px-3 py-2 text-red-600 border rounded-xl">Tolak</button></form>{%
+                        endif %}
+                </div>
+        </div>{% else %}<p class="text-slate-500">Belum ada pengajuan.</p>{% endfor %}</div>{% endblock %}

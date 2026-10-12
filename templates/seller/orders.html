@@ -1,0 +1,984 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto">
+
+    <!-- ======================================================
+         HEADER
+    ======================================================= -->
+    <div class="mb-6">
+
+        <div class="flex items-center gap-2 mb-2">
+
+            <span class="w-9 h-9 rounded-xl
+                         bg-teal-50 text-teal-700
+                         flex items-center justify-center">
+
+                <i class="fa-solid fa-receipt"></i>
+
+            </span>
+
+            <span class="text-xs font-bold uppercase
+                         tracking-wider text-teal-700">
+
+                Manajemen Pesanan
+
+            </span>
+
+        </div>
+
+        <h1 class="text-2xl sm:text-3xl
+                   font-black text-slate-900">
+
+            Pesanan Masuk
+
+        </h1>
+
+        <p class="text-sm sm:text-base
+                  text-slate-500 mt-1">
+
+            Kelola dan pantau pesanan yang masuk dari pembeli.
+
+        </p>
+
+    </div>
+
+
+    <!-- ======================================================
+         PENCARIAN & FILTER
+    ======================================================= -->
+    <div class="bg-white
+                border border-slate-200
+                rounded-2xl
+                shadow-sm
+                p-4 sm:p-5
+                mb-5">
+
+        <div class="flex flex-col lg:flex-row gap-3">
+
+            <!-- SEARCH -->
+            <div class="relative flex-1">
+
+                <span class="absolute left-3.5 top-1/2
+                             -translate-y-1/2
+                             text-slate-400">
+
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                </span>
+
+                <input type="text" id="orderSearch" placeholder="Cari nomor pesanan atau nama pembeli..." class="w-full
+                           border border-slate-200
+                           rounded-xl
+                           py-3 pl-10 pr-10
+                           text-sm
+                           outline-none
+                           focus:border-teal-500
+                           focus:ring-2
+                           focus:ring-teal-100
+                           transition">
+
+                <button type="button" id="clearSearch" class="hidden absolute right-3
+                           top-1/2 -translate-y-1/2
+                           w-7 h-7
+                           rounded-lg
+                           text-slate-400
+                           hover:bg-slate-100
+                           hover:text-slate-600
+                           transition" title="Hapus pencarian">
+
+                    <i class="fa-solid fa-xmark text-sm"></i>
+
+                </button>
+
+            </div>
+
+
+            <!-- FILTER STATUS -->
+            <div class="relative lg:w-64">
+
+                <span class="absolute left-3.5 top-1/2
+                             -translate-y-1/2
+                             text-slate-400
+                             pointer-events-none">
+
+                    <i class="fa-solid fa-filter"></i>
+
+                </span>
+
+                <select id="statusFilter" class="w-full
+                           border border-slate-200
+                           rounded-xl
+                           py-3 pl-10 pr-9
+                           text-sm
+                           bg-white
+                           outline-none
+                           focus:border-teal-500
+                           focus:ring-2
+                           focus:ring-teal-100
+                           transition
+                           appearance-none">
+
+                    <option value="all">
+                        Semua Status
+                    </option>
+
+                    <option value="Dibayar">
+                        Dibayar
+                    </option>
+
+                    <option value="Diproses">
+                        Diproses
+                    </option>
+
+                    <option value="Siap Diambil">
+                        Siap Diambil
+                    </option>
+
+                    <option value="Dalam Pengantaran">
+                        Dalam Pengantaran
+                    </option>
+
+                    <option value="Selesai">
+                        Selesai
+                    </option>
+
+                    <option value="Dibatalkan">
+                        Dibatalkan
+                    </option>
+
+                </select>
+
+                <span class="absolute right-3.5 top-1/2
+                             -translate-y-1/2
+                             text-slate-400
+                             pointer-events-none">
+
+                    <i class="fa-solid fa-chevron-down text-xs"></i>
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- HASIL FILTER -->
+        <div class="flex items-center justify-between
+                    gap-3 mt-4 pt-4
+                    border-t border-slate-100">
+
+            <p class="text-xs sm:text-sm text-slate-500">
+
+                Menampilkan
+                <span id="visibleCount" class="font-bold text-slate-700">0</span>
+                pesanan
+
+            </p>
+
+            <button type="button" id="resetFilter" class="text-xs sm:text-sm
+                       font-bold
+                       text-teal-700
+                       hover:text-teal-800
+                       transition">
+
+                <i class="fa-solid fa-rotate-left mr-1"></i>
+
+                Reset Filter
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         DAFTAR PESANAN
+         HANYA BAGIAN INI YANG SCROLL
+    ======================================================= -->
+    <div id="ordersContainer" class="space-y-4
+               max-h-[600px]
+               overflow-y-auto
+               pr-1
+               pb-1
+               overscroll-contain
+               scroll-smooth">
+
+        {% for o in orders %}
+
+        <!-- ==================================================
+                 PESANAN
+            =================================================== -->
+        <div class="order-item bg-white
+                       border border-slate-200
+                       rounded-2xl
+                       shadow-sm
+                       overflow-hidden
+                       hover:shadow-md
+                       transition" data-search="{{ (o.order_number ~ ' ' ~ o.buyer.name)|lower }}"
+            data-status="{{ o.order_status }}">
+
+            <div class="p-5 sm:p-6">
+
+                <!-- ==================================================
+                         HEADER PESANAN
+                    =================================================== -->
+                <div class="flex flex-col
+                                lg:flex-row
+                                lg:items-center
+                                lg:justify-between
+                                gap-4">
+
+                    <!-- INFORMASI PESANAN -->
+                    <div class="flex items-start
+                                    gap-3
+                                    min-w-0">
+
+                        <div class="w-11 h-11
+                                        shrink-0
+                                        rounded-xl
+                                        bg-teal-50
+                                        text-teal-700
+                                        flex items-center
+                                        justify-center">
+
+                            <i class="fa-solid fa-receipt"></i>
+
+                        </div>
+
+                        <div class="min-w-0">
+
+                            <p class="text-xs
+                                          font-semibold
+                                          uppercase
+                                          tracking-wide
+                                          text-slate-400
+                                          mb-1">
+
+                                Nomor Pesanan
+
+                            </p>
+
+                            <h2 class="font-black
+                                           text-slate-900
+                                           text-base sm:text-lg
+                                           truncate">
+
+                                {{ o.order_number }}
+
+                            </h2>
+
+                            <div class="flex flex-wrap
+                                            items-center
+                                            gap-x-3
+                                            gap-y-1
+                                            mt-1">
+
+                                <!-- PEMBELI -->
+                                <span class="text-sm
+                                                 text-slate-500">
+
+                                    <i class="fa-solid fa-user
+                                                  text-slate-400
+                                                  mr-1"></i>
+
+                                    {{ o.buyer.name }}
+
+                                </span>
+
+
+                                <span class="hidden sm:inline
+                                                 text-slate-300">
+
+                                    •
+
+                                </span>
+
+
+                                <!-- METODE -->
+                                <span class="text-sm
+                                                 text-slate-500">
+
+                                    {% if o.delivery_method == "pickup" %}
+
+                                    <i class="fa-solid fa-store
+                                                      text-slate-400
+                                                      mr-1"></i>
+
+                                    Ambil di Pasar
+
+                                    {% elif o.delivery_method == "delivery" %}
+
+                                    <i class="fa-solid fa-truck
+                                                      text-slate-400
+                                                      mr-1"></i>
+
+                                    Pengantaran
+
+                                    {% else %}
+
+                                    <i class="fa-solid fa-location-dot
+                                                      text-slate-400
+                                                      mr-1"></i>
+
+                                    {{ o.delivery_method }}
+
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                             STATUS
+                        =================================================== -->
+                    <div class="shrink-0">
+
+                        {% if o.order_status == "Dibayar" %}
+
+                        <span class="inline-flex
+                                             items-center
+                                             gap-2
+                                             px-3 py-2
+                                             rounded-xl
+                                             bg-emerald-50
+                                             text-emerald-700
+                                             text-xs sm:text-sm
+                                             font-bold">
+
+                            <i class="fa-solid fa-circle-check"></i>
+
+                            Dibayar
+
+                        </span>
+
+                        {% elif o.order_status == "Diproses" %}
+
+                        <span class="inline-flex
+                                             items-center
+                                             gap-2
+                                             px-3 py-2
+                                             rounded-xl
+                                             bg-amber-50
+                                             text-amber-700
+                                             text-xs sm:text-sm
+                                             font-bold">
+
+                            <i class="fa-solid fa-spinner"></i>
+
+                            Diproses
+
+                        </span>
+
+                        {% elif o.order_status == "Siap Diambil" %}
+
+                        <span class="inline-flex
+                                             items-center
+                                             gap-2
+                                             px-3 py-2
+                                             rounded-xl
+                                             bg-blue-50
+                                             text-blue-700
+                                             text-xs sm:text-sm
+                                             font-bold">
+
+                            <i class="fa-solid fa-box"></i>
+
+                            Siap Diambil
+
+                        </span>
+
+                        {% elif o.order_status == "Dalam Pengantaran" %}
+
+                        <span class="inline-flex
+                                             items-center
+                                             gap-2
+                                             px-3 py-2
+                                             rounded-xl
+                                             bg-orange-50
+                                             text-orange-700
+                                             text-xs sm:text-sm
+                                             font-bold">
+
+                            <i class="fa-solid fa-truck"></i>
+
+                            Dalam Pengantaran
+
+                        </span>
+
+                        {% elif o.order_status == "Selesai" %}
+
+                        <span class="inline-flex
+                                             items-center
+                                             gap-2
+                                             px-3 py-2
+                                             rounded-xl
+                                             bg-emerald-50
+                                             text-emerald-700
+                                             text-xs sm:text-sm
+                                             font-bold">
+
+                            <i class="fa-solid fa-circle-check"></i>
+
+                            Selesai
+
+                        </span>
+
+                        {% elif o.order_status == "Dibatalkan" %}
+
+                        <span class="inline-flex
+                                             items-center
+                                             gap-2
+                                             px-3 py-2
+                                             rounded-xl
+                                             bg-red-50
+                                             text-red-700
+                                             text-xs sm:text-sm
+                                             font-bold">
+
+                            <i class="fa-solid fa-circle-xmark"></i>
+
+                            Dibatalkan
+
+                        </span>
+
+                        {% else %}
+
+                        <span class="inline-flex
+                                             items-center
+                                             gap-2
+                                             px-3 py-2
+                                             rounded-xl
+                                             bg-slate-100
+                                             text-slate-600
+                                             text-xs sm:text-sm
+                                             font-bold">
+
+                            <i class="fa-solid fa-clock"></i>
+
+                            {{ o.order_status }}
+
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                         ACTION
+                    =================================================== -->
+                <div class="border-t
+                                border-slate-100
+                                mt-5 pt-5">
+
+                    <div class="flex flex-col
+                                    sm:flex-row
+                                    sm:items-center
+                                    sm:justify-between
+                                    gap-3">
+
+                        <!-- STATUS ACTION -->
+                        <div class="flex flex-wrap gap-2">
+
+                            {# ==========================================
+                            PESANAN SUDAH DIBAYAR
+                            ========================================== #}
+
+                            {% if o.order_status == "Dibayar" %}
+
+                            <form method="post" action="{{ url_for('seller_status', oid=o.id) }}">
+
+                                <input type="hidden" name="status" value="Diproses">
+
+                                <button type="submit" class="inline-flex
+                                                   items-center
+                                                   justify-center
+                                                   gap-2
+                                                   px-4 py-2.5
+                                                   bg-teal-600
+                                                   hover:bg-teal-700
+                                                   text-white
+                                                   rounded-xl
+                                                   text-sm
+                                                   font-bold
+                                                   shadow-sm
+                                                   transition">
+
+                                    <i class="fa-solid fa-play"></i>
+
+                                    Proses Pesanan
+
+                                </button>
+
+                            </form>
+
+
+                            {# ==========================================
+                            PESANAN SEDANG DIPROSES
+                            ========================================== #}
+
+                            {% elif o.order_status == "Diproses" %}
+
+                            {% if o.delivery_method == "pickup" %}
+
+                            <form method="post" action="{{ url_for('seller_status', oid=o.id) }}">
+
+                                <input type="hidden" name="status" value="Siap Diambil">
+
+                                <button type="submit" class="inline-flex
+                                                       items-center
+                                                       justify-center
+                                                       gap-2
+                                                       px-4 py-2.5
+                                                       bg-blue-600
+                                                       hover:bg-blue-700
+                                                       text-white
+                                                       rounded-xl
+                                                       text-sm
+                                                       font-bold
+                                                       shadow-sm
+                                                       transition">
+
+                                    <i class="fa-solid fa-box"></i>
+
+                                    Siap Diambil
+
+                                </button>
+
+                            </form>
+
+
+                            {% elif o.delivery_method == "delivery" %}
+
+                            <form method="post" action="{{ url_for('seller_status', oid=o.id) }}">
+
+                                <input type="hidden" name="status" value="Dalam Pengantaran">
+
+                                <button type="submit" class="inline-flex
+                                                       items-center
+                                                       justify-center
+                                                       gap-2
+                                                       px-4 py-2.5
+                                                       bg-orange-500
+                                                       hover:bg-orange-600
+                                                       text-white
+                                                       rounded-xl
+                                                       text-sm
+                                                       font-bold
+                                                       shadow-sm
+                                                       transition">
+
+                                    <i class="fa-solid fa-truck"></i>
+
+                                    Mulai Pengantaran
+
+                                </button>
+
+                            </form>
+
+                            {% endif %}
+
+
+                            {# ==========================================
+                            SIAP DIAMBIL
+                            ========================================== #}
+
+                            {% elif o.order_status == "Siap Diambil" %}
+
+                            <div class="inline-flex
+                                                items-center
+                                                gap-2
+                                                px-4 py-2.5
+                                                bg-blue-50
+                                                text-blue-700
+                                                rounded-xl
+                                                text-sm
+                                                font-bold">
+
+                                <i class="fa-solid fa-clock"></i>
+
+                                Menunggu Pembeli Mengambil
+
+                            </div>
+
+
+                            {# ==========================================
+                            DALAM PENGANTARAN
+                            ========================================== #}
+
+                            {% elif o.order_status == "Dalam Pengantaran" %}
+
+                            <div class="inline-flex
+                                                items-center
+                                                gap-2
+                                                px-4 py-2.5
+                                                bg-orange-50
+                                                text-orange-700
+                                                rounded-xl
+                                                text-sm
+                                                font-bold">
+
+                                <i class="fa-solid fa-clock"></i>
+
+                                Menunggu Pembeli Menerima
+
+                            </div>
+
+
+                            {# ==========================================
+                            PESANAN SELESAI
+                            ========================================== #}
+
+                            {% elif o.order_status == "Selesai" %}
+
+                            <div class="inline-flex
+                                                items-center
+                                                gap-2
+                                                px-4 py-2.5
+                                                bg-emerald-50
+                                                text-emerald-700
+                                                rounded-xl
+                                                text-sm
+                                                font-bold">
+
+                                <i class="fa-solid fa-circle-check"></i>
+
+                                Pesanan Selesai
+
+                            </div>
+
+                            {% elif o.order_status == "Dibatalkan" %}
+
+                            <div class="inline-flex
+                                                items-center
+                                                gap-2
+                                                px-4 py-2.5
+                                                bg-red-50
+                                                text-red-700
+                                                rounded-xl
+                                                text-sm
+                                                font-bold">
+
+                                <i class="fa-solid fa-circle-xmark"></i>
+
+                                Pesanan Dibatalkan
+
+                            </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- DETAIL -->
+                        <a href="{{ url_for('order_detail', oid=o.id) }}" class="inline-flex
+                                       items-center
+                                       justify-center
+                                       gap-2
+                                       px-4 py-2.5
+                                       bg-slate-900
+                                       hover:bg-slate-800
+                                       text-white
+                                       rounded-xl
+                                       text-sm
+                                       font-bold
+                                       transition
+                                       w-full sm:w-auto">
+
+                            <i class="fa-solid fa-eye"></i>
+
+                            Detail Pesanan
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <!-- ======================================================
+                 EMPTY DATABASE
+            ======================================================= -->
+        <div class="bg-white
+                       border border-slate-200
+                       rounded-2xl
+                       shadow-sm
+                       px-6 py-14
+                       text-center">
+
+            <div class="w-20 h-20 mx-auto
+                            rounded-3xl
+                            bg-slate-100
+                            text-slate-400
+                            flex items-center
+                            justify-center">
+
+                <i class="fa-solid fa-receipt text-3xl"></i>
+
+            </div>
+
+            <h2 class="mt-5
+                           text-xl
+                           font-black
+                           text-slate-800">
+
+                Belum Ada Pesanan
+
+            </h2>
+
+            <p class="text-sm
+                          text-slate-500
+                          mt-2
+                          max-w-md
+                          mx-auto">
+
+                Pesanan dari pembeli akan muncul di halaman ini
+                setelah ada transaksi.
+
+            </p>
+
+        </div>
+
+        {% endfor %}
+
+
+        <!-- ======================================================
+             HASIL PENCARIAN KOSONG
+        ======================================================= -->
+        <div id="noSearchResult" class="hidden
+                   bg-white
+                   border border-slate-200
+                   rounded-2xl
+                   shadow-sm
+                   px-6 py-12
+                   text-center">
+
+            <div class="w-16 h-16 mx-auto
+                        rounded-2xl
+                        bg-slate-100
+                        text-slate-400
+                        flex items-center
+                        justify-center">
+
+                <i class="fa-solid fa-magnifying-glass text-2xl"></i>
+
+            </div>
+
+            <h2 class="mt-4
+                       text-lg
+                       font-black
+                       text-slate-800">
+
+                Pesanan Tidak Ditemukan
+
+            </h2>
+
+            <p class="text-sm
+                      text-slate-500
+                      mt-1">
+
+                Tidak ada pesanan yang sesuai dengan pencarian
+                atau filter yang dipilih.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==========================================================
+     SEARCH & FILTER SCRIPT
+=========================================================== -->
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const searchInput = document.getElementById('orderSearch');
+        const statusFilter = document.getElementById('statusFilter');
+        const clearSearch = document.getElementById('clearSearch');
+        const resetFilter = document.getElementById('resetFilter');
+        const visibleCount = document.getElementById('visibleCount');
+        const noSearchResult = document.getElementById('noSearchResult');
+
+        const orderItems = Array.from(
+            document.querySelectorAll('.order-item')
+        );
+
+
+        function filterOrders() {
+
+            const searchValue = searchInput.value
+                .toLowerCase()
+                .trim();
+
+            const selectedStatus = statusFilter.value;
+
+            let visible = 0;
+
+
+            orderItems.forEach(function (item) {
+
+                const searchText =
+                    item.dataset.search || '';
+
+                const orderStatus =
+                    item.dataset.status || '';
+
+                const matchSearch =
+                    searchText.includes(searchValue);
+
+                const matchStatus =
+                    selectedStatus === 'all' ||
+                    orderStatus === selectedStatus;
+
+
+                if (matchSearch && matchStatus) {
+
+                    item.classList.remove('hidden');
+
+                    visible++;
+
+                } else {
+
+                    item.classList.add('hidden');
+
+                }
+
+            });
+
+
+            visibleCount.textContent = visible;
+
+
+            if (searchValue.length > 0) {
+
+                clearSearch.classList.remove('hidden');
+
+            } else {
+
+                clearSearch.classList.add('hidden');
+
+            }
+
+
+            if (orderItems.length > 0 && visible === 0) {
+
+                noSearchResult.classList.remove('hidden');
+
+            } else {
+
+                noSearchResult.classList.add('hidden');
+
+            }
+
+        }
+
+
+        /* ======================================================
+           PENCARIAN
+        ======================================================= */
+
+        searchInput.addEventListener(
+            'input',
+            filterOrders
+        );
+
+
+        /* ======================================================
+           FILTER STATUS
+        ======================================================= */
+
+        statusFilter.addEventListener(
+            'change',
+            filterOrders
+        );
+
+
+        /* ======================================================
+           CLEAR SEARCH
+        ======================================================= */
+
+        clearSearch.addEventListener(
+            'click',
+            function () {
+
+                searchInput.value = '';
+
+                filterOrders();
+
+                searchInput.focus();
+
+            }
+        );
+
+
+        /* ======================================================
+           RESET FILTER
+        ======================================================= */
+
+        resetFilter.addEventListener(
+            'click',
+            function () {
+
+                searchInput.value = '';
+
+                statusFilter.value = 'all';
+
+                filterOrders();
+
+            }
+        );
+
+
+        /* ======================================================
+           INITIAL COUNT
+        ======================================================= */
+
+        filterOrders();
+
+    });
+
+</script>
+
+
+<!-- ==========================================================
+     CUSTOM SCROLLBAR
+=========================================================== -->
+<style>
+    #ordersContainer::-webkit-scrollbar {
+        width: 7px;
+    }
+
+    #ordersContainer::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    #ordersContainer::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 999px;
+    }
+
+    #ordersContainer::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+</style>
+
+{% endblock %}

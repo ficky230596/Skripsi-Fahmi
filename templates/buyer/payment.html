@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="bg-white border rounded-2xl p-6 max-w-2xl mx-auto">
+
+    <!-- Header -->
+    <div class="text-center mb-6">
+
+        <div class="w-16 h-16 mx-auto rounded-full bg-teal-100 flex items-center justify-center mb-4">
+
+            <i class="fa-solid fa-credit-card text-2xl text-teal-700"></i>
+
+        </div>
+
+        <h3 class="text-2xl font-black">
+            Pembayaran
+        </h3>
+
+        <p class="text-slate-500 mt-1">
+            {{ order.order_number }}
+        </p>
+
+    </div>
+
+
+    <!-- Total -->
+    <div class="bg-slate-50 rounded-xl p-5 text-center mb-6">
+
+        <p class="text-sm text-slate-500">
+            Total Pembayaran
+        </p>
+
+        <h4 class="text-3xl font-black text-teal-700 mt-1">
+            Rp {{ '{:,.0f}'.format(order.total|float) }}
+        </h4>
+
+    </div>
+
+
+    {% if snap_token %}
+
+        <!-- Payment Button -->
+        <button
+            id="pay"
+            type="button"
+            class="w-full bg-teal-700 hover:bg-teal-800 text-white py-3 px-5 rounded-xl font-bold transition">
+
+            <i class="fa-solid fa-credit-card mr-2"></i>
+
+            Bayar dengan Midtrans
+
+        </button>
+
+
+        <!-- Payment Data -->
+        <div
+            id="paymentConfig"
+            class="hidden"
+            data-snap-token="{{ snap_token }}"
+            data-orders-url="{{ url_for('buyer_orders') }}">
+        </div>
+
+
+    {% else %}
+
+        <!-- Midtrans Not Configured -->
+        <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl p-4">
+
+            <div class="flex gap-3">
+
+                <i class="fa-solid fa-triangle-exclamation mt-1"></i>
+
+                <div>
+
+                    <p class="font-bold">
+                        Midtrans belum dikonfigurasi
+                    </p>
+
+                    <p class="text-sm mt-1">
+                        Isi kredensial Midtrans pada file
+                        <code class="font-mono">.env</code>.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+{% if snap_token %}
+
+    <!-- Midtrans Snap -->
+    <script
+        src="https://app.sandbox.midtrans.com/snap/snap.js"
+        data-client-key="{{ client_key }}">
+    </script>
+
+
+    <!-- Midtrans Payment Script -->
+    <script>
+
+        const paymentConfig =
+            document.getElementById('paymentConfig');
+
+        const payButton =
+            document.getElementById('pay');
+
+
+        if (paymentConfig && payButton) {
+
+            const snapToken =
+                paymentConfig.dataset.snapToken;
+
+            const ordersUrl =
+                paymentConfig.dataset.ordersUrl;
+
+
+            payButton.addEventListener('click', function () {
+
+                if (!snapToken) {
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Token pembayaran tidak tersedia.'
+                    });
+
+                    return;
+                }
+
+
+                snap.pay(
+                    snapToken,
+                    {
+
+                        onSuccess: function () {
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Pembayaran Berhasil',
+                                text: 'Pembayaran berhasil diproses.',
+                                timer: 1800,
+                                showConfirmButton: false
+                            }).then(function () {
+
+                                window.location.href =
+                                    ordersUrl;
+
+                            });
+
+                        },
+
+
+                        onPending: function () {
+
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Menunggu Pembayaran',
+                                text: 'Pembayaran masih menunggu konfirmasi.',
+                                timer: 1800,
+                                showConfirmButton: false
+                            }).then(function () {
+
+                                window.location.href =
+                                    ordersUrl;
+
+                            });
+
+                        },
+
+
+                        onError: function () {
+
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Pembayaran Gagal',
+                                text: 'Pembayaran gagal. Silakan coba lagi.'
+                            });
+
+                        },
+
+
+                        onClose: function () {
+
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Pembayaran Belum Selesai',
+                                text: 'Jendela pembayaran ditutup sebelum pembayaran selesai.'
+                            });
+
+                        }
+
+                    }
+                );
+
+            });
+
+        }
+
+    </script>
+
+{% endif %}
+
+{% endblock %}
+

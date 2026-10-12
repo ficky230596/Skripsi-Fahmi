@@ -1,0 +1,740 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="min-h-[calc(100vh-80px)] bg-slate-100 flex items-center justify-center px-4 py-10">
+
+
+<div class="w-full max-w-md">
+
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+
+        <!-- HEADER -->
+        <div class="bg-teal-700 px-6 py-8 text-center text-white">
+
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center">
+                <i class="fa-solid fa-shield-halved text-3xl"></i>
+            </div>
+
+            <h1 class="text-2xl font-black">
+                Verifikasi OTP
+            </h1>
+
+            <p class="text-teal-100 text-sm mt-2">
+                Masukkan kode OTP yang dikirim ke kontak Anda.
+            </p>
+
+        </div>
+
+
+        <!-- CONTENT -->
+        <div class="p-6">
+
+            <!-- INFORMASI KONTAK -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+
+                <p class="text-sm text-slate-500 mb-4 text-center">
+                    Kode OTP dikirim ke
+                </p>
+
+
+                <!-- EMAIL -->
+                <div class="flex items-center gap-3">
+
+                    <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
+
+                    <div class="min-w-0">
+
+                        <p class="text-xs text-slate-500">
+                            Email
+                        </p>
+
+                        <p class="font-bold text-slate-800 break-all">
+                            {{ user.email }}
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- WHATSAPP -->
+                {% if user.phone %}
+
+                    <div class="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-slate-200">
+
+                        <div class="flex items-center gap-3 min-w-0">
+
+                            <div class="w-10 h-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center shrink-0">
+                                <i class="fa-brands fa-whatsapp text-lg"></i>
+                            </div>
+
+                            <div class="min-w-0">
+
+                                <p class="text-xs text-slate-500">
+                                    WhatsApp
+                                </p>
+
+                                <p class="font-bold text-slate-800 break-all">
+                                    {{ user.phone }}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            id="showEditPhone"
+                            class="text-xs font-bold text-teal-700 hover:text-teal-800 shrink-0 transition"
+                        >
+                            <i class="fa-solid fa-pen mr-1"></i>
+                            Edit
+                        </button>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="mt-4 pt-4 border-t border-slate-200 text-center">
+
+                        <p class="text-xs text-slate-500 mb-2">
+                            Belum ada nomor WhatsApp.
+                        </p>
+
+                        <button
+                            type="button"
+                            id="showEditPhone"
+                            class="text-sm font-bold text-teal-700 hover:text-teal-800 transition"
+                        >
+                            <i class="fa-solid fa-plus mr-1"></i>
+                            Tambahkan Nomor WhatsApp
+                        </button>
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- FORM EDIT NOMOR -->
+                <div
+                    id="editPhoneBox"
+                    class="hidden mt-4 pt-4 border-t border-slate-200"
+                >
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('edit_phone', uid=user.id) }}"
+                        id="editPhoneForm"
+                    >
+
+                        <label
+                            for="newPhone"
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                        >
+                            <i class="fa-brands fa-whatsapp text-green-600 mr-1"></i>
+                            Nomor WhatsApp Baru
+                        </label>
+
+
+                        <div class="relative">
+
+                            <i class="fa-brands fa-whatsapp absolute left-4 top-1/2 -translate-y-1/2 text-green-500"></i>
+
+                            <input
+                                type="tel"
+                                name="phone"
+                                id="newPhone"
+                                inputmode="numeric"
+                                autocomplete="tel"
+                                maxlength="15"
+                                minlength="10"
+                                pattern="[0-9]{10,15}"
+                                placeholder="08xxxxxxxxxx"
+                                required
+                                class="w-full border border-slate-200 rounded-xl py-3 pl-11 pr-4 outline-none transition focus:border-teal-600 focus:ring-4 focus:ring-teal-100"
+                            >
+
+                        </div>
+
+
+                        <p class="text-xs text-slate-500 mt-2">
+                            Masukkan nomor WhatsApp aktif 10–15 digit.
+                            OTP baru akan dikirim ke nomor ini.
+                        </p>
+
+
+                        <div class="flex gap-2 mt-4">
+
+                            <button
+                                type="submit"
+                                id="savePhoneButton"
+                                class="flex-1 bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white font-bold rounded-xl py-3 transition flex items-center justify-center"
+                            >
+                                <i class="fa-solid fa-paper-plane mr-2"></i>
+                                Simpan & Kirim OTP
+                            </button>
+
+
+                            <button
+                                type="button"
+                                id="cancelEditPhone"
+                                class="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition"
+                            >
+                                Batal
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+
+            <!-- FORM VERIFIKASI -->
+            <form
+                method="POST"
+                action="{{ url_for('verify', uid=user.id) }}"
+                id="verifyForm"
+            >
+
+                <div>
+
+                    <label
+                        for="otp"
+                        class="block text-sm font-bold text-slate-700 mb-2"
+                    >
+                        <i class="fa-solid fa-key text-teal-700 mr-1"></i>
+                        Kode OTP
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="otp"
+                        name="otp"
+                        maxlength="6"
+                        minlength="6"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        pattern="[0-9]{6}"
+                        required
+                        autofocus
+                        placeholder="Masukkan 6 digit OTP"
+                        class="w-full text-center tracking-[0.5em] text-xl font-bold border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"
+                    >
+
+
+                    <p
+                        id="otpHelp"
+                        class="text-xs text-slate-500 mt-2 text-center"
+                    >
+                        OTP harus terdiri dari tepat 6 digit angka.
+                    </p>
+
+                </div>
+
+
+                <!-- TOMBOL VERIFIKASI -->
+                <button
+                    type="submit"
+                    id="verifyButton"
+                    class="w-full mt-5 bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white font-bold rounded-xl py-3 transition flex items-center justify-center gap-2"
+                >
+                    <i class="fa-solid fa-circle-check"></i>
+                    Verifikasi OTP
+                </button>
+
+            </form>
+
+
+            <!-- KIRIM ULANG -->
+            <div class="text-center mt-7">
+
+                <p class="text-sm text-slate-500 mb-3">
+                    Tidak menerima kode OTP?
+                </p>
+
+
+                <form
+                    method="POST"
+                    action="{{ url_for('resend_otp', uid=user.id) }}"
+                    id="resendForm"
+                >
+
+                    <button
+                        type="submit"
+                        id="resendButton"
+                        class="inline-flex items-center justify-center text-teal-700 hover:text-teal-800 font-bold text-sm transition"
+                    >
+                        <i class="fa-solid fa-rotate-right mr-2"></i>
+                        Kirim Ulang Kode OTP
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            <!-- LOGIN -->
+            <div class="text-center mt-6 pt-5 border-t border-slate-200">
+
+                <p class="text-sm text-slate-500">
+
+                    Sudah terverifikasi?
+
+                    <a
+                        href="{{ url_for('login') }}"
+                        class="text-teal-700 font-bold hover:text-teal-800 transition"
+                    >
+                        Masuk ke akun
+                    </a>
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+
+    const otpInput =
+        document.getElementById('otp');
+
+    const otpHelp =
+        document.getElementById('otpHelp');
+
+    const verifyForm =
+        document.getElementById('verifyForm');
+
+    const verifyButton =
+        document.getElementById('verifyButton');
+
+
+    const resendForm =
+        document.getElementById('resendForm');
+
+    const resendButton =
+        document.getElementById('resendButton');
+
+
+    const showEditPhone =
+        document.getElementById('showEditPhone');
+
+    const editPhoneBox =
+        document.getElementById('editPhoneBox');
+
+    const cancelEditPhone =
+        document.getElementById('cancelEditPhone');
+
+    const newPhone =
+        document.getElementById('newPhone');
+
+    const editPhoneForm =
+        document.getElementById('editPhoneForm');
+
+    const savePhoneButton =
+        document.getElementById('savePhoneButton');
+
+
+    /* =====================================================
+       OTP - HANYA ANGKA
+    ====================================================== */
+
+    if (otpInput) {
+
+        otpInput.addEventListener(
+            'input',
+            function () {
+
+                this.value =
+                    this.value.replace(/\D/g, '');
+
+
+                if (this.value.length > 6) {
+
+                    this.value =
+                        this.value.substring(0, 6);
+
+                }
+
+
+                /* VALIDASI OTP */
+
+                if (this.value.length === 0) {
+
+                    this.setCustomValidity('');
+
+                    otpHelp.textContent =
+                        'OTP harus terdiri dari tepat 6 digit angka.';
+
+                    otpHelp.classList.remove(
+                        'text-red-600',
+                        'text-green-600'
+                    );
+
+                    otpHelp.classList.add(
+                        'text-slate-500'
+                    );
+
+                }
+
+                else if (this.value.length < 6) {
+
+                    this.setCustomValidity(
+                        'Kode OTP harus terdiri dari 6 digit angka.'
+                    );
+
+                    otpHelp.textContent =
+                        `Masukkan ${6 - this.value.length} digit lagi.`;
+
+                    otpHelp.classList.remove(
+                        'text-slate-500',
+                        'text-green-600'
+                    );
+
+                    otpHelp.classList.add(
+                        'text-red-600'
+                    );
+
+                }
+
+                else {
+
+                    this.setCustomValidity('');
+
+                    otpHelp.textContent =
+                        'Kode OTP sudah lengkap.';
+
+                    otpHelp.classList.remove(
+                        'text-slate-500',
+                        'text-red-600'
+                    );
+
+                    otpHelp.classList.add(
+                        'text-green-600'
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       BLOKIR INPUT NON-NUMERIC
+    ====================================================== */
+
+    if (otpInput) {
+
+        otpInput.addEventListener(
+            'keydown',
+            function (event) {
+
+                const allowedKeys = [
+                    'Backspace',
+                    'Delete',
+                    'ArrowLeft',
+                    'ArrowRight',
+                    'Home',
+                    'End',
+                    'Tab'
+                ];
+
+
+                if (
+                    allowedKeys.includes(event.key) ||
+                    event.ctrlKey ||
+                    event.metaKey
+                ) {
+
+                    return;
+
+                }
+
+
+                if (!/^[0-9]$/.test(event.key)) {
+
+                    event.preventDefault();
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       BLOKIR PASTE NON-NUMERIC
+    ====================================================== */
+
+    if (otpInput) {
+
+        otpInput.addEventListener(
+            'paste',
+            function (event) {
+
+                const pastedText =
+                    (
+                        event.clipboardData ||
+                        window.clipboardData
+                    ).getData('text');
+
+
+                if (!/^[0-9]+$/.test(pastedText)) {
+
+                    event.preventDefault();
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'OTP tidak valid',
+                        text: 'Kode OTP hanya boleh berisi angka.',
+                        confirmButtonColor: '#0f766e'
+                    });
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       SUBMIT VERIFIKASI
+    ====================================================== */
+
+    if (verifyForm) {
+
+        verifyForm.addEventListener(
+            'submit',
+            function (event) {
+
+                const otpValue =
+                    otpInput.value.trim();
+
+
+                if (!/^[0-9]{6}$/.test(otpValue)) {
+
+                    event.preventDefault();
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'OTP tidak valid',
+                        text: 'Kode OTP harus terdiri dari tepat 6 digit angka.',
+                        confirmButtonColor: '#0f766e'
+                    }).then(function () {
+
+                        otpInput.focus();
+
+                    });
+
+                    return;
+
+                }
+
+
+                /* CEGAH SUBMIT GANDA */
+
+                verifyButton.disabled = true;
+
+                verifyButton.innerHTML = `
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    Memverifikasi...
+                `;
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       TAMPILKAN FORM EDIT NOMOR
+    ====================================================== */
+
+    if (showEditPhone && editPhoneBox) {
+
+        showEditPhone.addEventListener(
+            'click',
+            function () {
+
+                editPhoneBox.classList.remove(
+                    'hidden'
+                );
+
+                showEditPhone.classList.add(
+                    'hidden'
+                );
+
+
+                if (newPhone) {
+
+                    newPhone.focus();
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       BATAL EDIT NOMOR
+    ====================================================== */
+
+    if (cancelEditPhone) {
+
+        cancelEditPhone.addEventListener(
+            'click',
+            function () {
+
+                editPhoneBox.classList.add(
+                    'hidden'
+                );
+
+
+                if (showEditPhone) {
+
+                    showEditPhone.classList.remove(
+                        'hidden'
+                    );
+
+                }
+
+
+                if (newPhone) {
+
+                    newPhone.value = '';
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       NOMOR BARU - HANYA ANGKA
+    ====================================================== */
+
+    if (newPhone) {
+
+        newPhone.addEventListener(
+            'input',
+            function () {
+
+                this.value =
+                    this.value.replace(/\D/g, '');
+
+
+                if (this.value.length > 15) {
+
+                    this.value =
+                        this.value.substring(0, 15);
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       SUBMIT EDIT NOMOR
+    ====================================================== */
+
+    if (editPhoneForm) {
+
+        editPhoneForm.addEventListener(
+            'submit',
+            function (event) {
+
+                const phoneValue =
+                    newPhone.value.trim();
+
+
+                if (
+                    !/^[0-9]{10,15}$/.test(
+                        phoneValue
+                    )
+                ) {
+
+                    event.preventDefault();
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Nomor tidak valid',
+                        text: 'Nomor WhatsApp harus terdiri dari 10–15 digit angka.',
+                        confirmButtonColor: '#0f766e'
+                    }).then(function () {
+
+                        newPhone.focus();
+
+                    });
+
+                    return;
+
+                }
+
+
+                savePhoneButton.disabled = true;
+
+                savePhoneButton.innerHTML = `
+                    <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+                    Memproses...
+                `;
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       KIRIM ULANG OTP
+    ====================================================== */
+
+    if (resendForm) {
+
+        resendForm.addEventListener(
+            'submit',
+            function () {
+
+                resendButton.disabled = true;
+
+                resendButton.innerHTML = `
+                    <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+                    Mengirim ulang...
+                `;
+
+            }
+        );
+
+    }
+
+</script>
+
+{% endblock %}

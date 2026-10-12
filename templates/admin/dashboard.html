@@ -1,0 +1,356 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="mb-8">
+
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+        <div>
+            <div class="flex items-center gap-2 text-sm text-teal-700 font-semibold mb-2">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Panel Administrator</span>
+            </div>
+
+            <h1 class="text-3xl md:text-4xl font-black text-slate-900">
+                Dashboard Admin
+            </h1>
+
+            <p class="text-slate-500 mt-2">
+                Pengelolaan dan monitoring aktivitas Pasar Remboken.
+            </p>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center">
+                    <i class="fa-solid fa-shield-halved text-teal-700"></i>
+                </div>
+
+                <div>
+                    <p class="text-xs text-slate-500">
+                        Status Sistem
+                    </p>
+
+                    <p class="font-bold text-green-600 flex items-center gap-1">
+                        <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                        Aktif
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Statistik Utama -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
+
+    <!-- Pengguna -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+
+        <div class="flex items-start justify-between">
+
+            <div>
+                <p class="text-sm text-slate-500">
+                    Total Pengguna
+                </p>
+
+                <h2 class="text-3xl font-black text-slate-900 mt-2">
+                    {{ users }}
+                </h2>
+
+                <p class="text-xs text-slate-400 mt-1">
+                    Semua akun terdaftar
+                </p>
+            </div>
+
+            <div class="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center">
+                <i class="fa-solid fa-users text-xl text-teal-700"></i>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Pedagang -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+
+        <div class="flex items-start justify-between">
+
+            <div>
+                <p class="text-sm text-slate-500">
+                    Total Pedagang
+                </p>
+
+                <h2 class="text-3xl font-black text-slate-900 mt-2">
+                    {{ sellers }}
+                </h2>
+
+                <p class="text-xs text-slate-400 mt-1">
+                    Pedagang terdaftar
+                </p>
+            </div>
+
+            <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                <i class="fa-solid fa-store text-xl text-blue-700"></i>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Pembeli -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+
+        <div class="flex items-start justify-between">
+
+            <div>
+                <p class="text-sm text-slate-500">
+                    Total Pembeli
+                </p>
+
+                <h2 class="text-3xl font-black text-slate-900 mt-2">
+                    {{ buyers }}
+                </h2>
+
+                <p class="text-xs text-slate-400 mt-1">
+                    Pembeli terdaftar
+                </p>
+            </div>
+
+            <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+                <i class="fa-solid fa-cart-shopping text-xl text-purple-700"></i>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Pesanan -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+
+        <div class="flex items-start justify-between">
+
+            <div>
+                <p class="text-sm text-slate-500">
+                    Total Pesanan
+                </p>
+
+                <h2 class="text-3xl font-black text-slate-900 mt-2">
+                    {{ orders }}
+                </h2>
+
+                <p class="text-xs text-slate-400 mt-1">
+                    Semua transaksi
+                </p>
+            </div>
+
+            <div class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
+                <i class="fa-solid fa-receipt text-xl text-orange-700"></i>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Statistik Keuangan -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+
+    <!-- Transaksi -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+
+        <div class="flex items-start justify-between">
+
+            <div>
+                <p class="text-sm text-slate-500">
+                    Transaksi Dibayar
+                </p>
+
+                <h2 class="text-2xl md:text-3xl font-black text-teal-700 mt-2">
+                    {{ rupiah(revenue) }}
+                </h2>
+
+                <p class="text-xs text-slate-400 mt-1">
+                    Total transaksi yang telah dibayar
+                </p>
+            </div>
+
+            <div class="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center">
+                <i class="fa-solid fa-money-bill-wave text-xl text-teal-700"></i>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Verifikasi -->
+    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
+
+        <div class="flex items-start justify-between">
+
+            <div>
+                <p class="text-sm text-amber-700">
+                    Verifikasi Pending
+                </p>
+
+                <h2 class="text-3xl font-black text-amber-800 mt-2">
+                    {{ pending }}
+                </h2>
+
+                <p class="text-xs text-amber-600 mt-1">
+                    Pedagang menunggu verifikasi
+                </p>
+            </div>
+
+            <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
+                <i class="fa-solid fa-user-clock text-xl text-amber-700"></i>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Penarikan -->
+    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 shadow-sm">
+
+        <div class="flex items-start justify-between">
+
+            <div>
+                <p class="text-sm text-blue-700">
+                    Penarikan Pending
+                </p>
+
+                <h2 class="text-3xl font-black text-blue-800 mt-2">
+                    {{ withdrawals }}
+                </h2>
+
+                <p class="text-xs text-blue-600 mt-1">
+                    Permintaan pencairan dana
+                </p>
+            </div>
+
+            <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                <i class="fa-solid fa-money-check-dollar text-xl text-blue-700"></i>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Menu Cepat -->
+<div class="mt-8">
+
+    <div class="flex items-center justify-between mb-4">
+
+        <div>
+            <h2 class="text-xl font-black text-slate-900">
+                Menu Pengelolaan
+            </h2>
+
+            <p class="text-sm text-slate-500 mt-1">
+                Akses cepat untuk mengelola sistem Pasar Remboken.
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <!-- Verifikasi Pedagang -->
+        <a
+            href="{{ url_for('admin_sellers') }}"
+            class="group bg-slate-900 hover:bg-slate-800 text-white rounded-2xl p-5 transition shadow-sm">
+
+            <div class="flex items-center justify-between mb-5">
+
+                <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+                    <i class="fa-solid fa-store text-xl"></i>
+                </div>
+
+                <i class="fa-solid fa-arrow-right opacity-60 group-hover:translate-x-1 transition"></i>
+
+            </div>
+
+            <h3 class="font-bold text-lg">
+                Verifikasi Pedagang
+            </h3>
+
+            <p class="text-sm text-slate-300 mt-1">
+                Periksa dan setujui data pedagang yang mendaftar.
+            </p>
+
+        </a>
+
+
+        <!-- Penarikan -->
+        <a
+            href="{{ url_for('admin_withdrawals') }}"
+            class="group bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl p-5 transition shadow-sm">
+
+            <div class="flex items-center justify-between mb-5">
+
+                <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                    <i class="fa-solid fa-money-check-dollar text-xl text-blue-700"></i>
+                </div>
+
+                <i class="fa-solid fa-arrow-right text-slate-400 group-hover:translate-x-1 transition"></i>
+
+            </div>
+
+            <h3 class="font-bold text-lg text-slate-900">
+                Kelola Penarikan
+            </h3>
+
+            <p class="text-sm text-slate-500 mt-1">
+                Kelola permintaan pencairan dana dari pedagang.
+            </p>
+
+        </a>
+
+
+        <!-- Laporan -->
+        <a
+            href="{{ url_for('admin_reports') }}"
+            class="group bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl p-5 transition shadow-sm">
+
+            <div class="flex items-center justify-between mb-5">
+
+                <div class="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center">
+                    <i class="fa-solid fa-chart-column text-xl text-teal-700"></i>
+                </div>
+
+                <i class="fa-solid fa-arrow-right text-slate-400 group-hover:translate-x-1 transition"></i>
+
+            </div>
+
+            <h3 class="font-bold text-lg text-slate-900">
+                Lihat Laporan
+            </h3>
+
+            <p class="text-sm text-slate-500 mt-1">
+                Lihat statistik dan laporan transaksi pasar.
+            </p>
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

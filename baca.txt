@@ -1,0 +1,22 @@
+jalankan ngrok
+
+ngrok http 5000
+
+
+# 1. Inisialisasi folder proyek menjadi repositori Git lokal
+git init
+
+# 2. Tambahkan semua file proyek ke dalam *staging area* (termasuk .gitignore)
+git add .
+
+# 3. Lakukan commit pertama Anda untuk menyimpan perubahan secara lokal
+git commit -m "Initial commit: Struktur proyek pasar_remboken"
+
+# 4. Ubah nama branch utama menjadi 'main' (standar GitHub)
+git branch -M main
+
+# 5. Hubungkan repositori lokal Anda ke URL GitHub Anda
+git remote add origin https://github.com/ficky230596/Skripsi-Fahmi.git
+
+# 6. Push kode Anda dari komputer lokal ke GitHub
+git push -u origin main

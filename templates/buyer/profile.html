@@ -1,0 +1,1835 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="profile-page max-w-7xl mx-auto w-full px-3 sm:px-5 lg:px-6 py-5 sm:py-7">
+
+    <!-- HEADER -->
+    <header class="mb-5 sm:mb-7">
+        <p class="text-xs sm:text-sm text-slate-500 mb-1">
+            Beranda / Akun
+        </p>
+
+        <h1 class="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
+            Profil Saya
+        </h1>
+
+        <p class="text-sm text-slate-500 mt-1">
+            Kelola informasi dan aktivitas akun Anda.
+        </p>
+    </header>
+
+    <!-- PROFILE LAYOUT -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
+
+        <!-- SIDEBAR PROFIL -->
+        <aside class="lg:col-span-3 min-w-0">
+            <div class="profile-sidebar bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+
+                <!-- IDENTITAS -->
+                <div class="p-4 sm:p-5">
+                    <div class="flex items-center gap-3 sm:gap-4 lg:flex-col lg:text-center">
+
+                        <!-- FOTO -->
+                        <div class="flex flex-col items-center gap-2 shrink-0">
+
+                            <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden
+                                        bg-teal-100 text-teal-800 flex items-center justify-center
+                                        text-2xl font-black border border-slate-200">
+
+                                {% if user.profile_photo %}
+                                <img src="{{ url_for('static', filename='uploads/profile_photos/' ~ user.profile_photo) }}"
+                                    alt="Foto profil {{ user.name }}" class="w-full h-full object-cover">
+                                {% else %}
+                                {{ (user.name or 'P')[0]|upper }}
+                                {% endif %}
+
+                            </div>
+
+                            <button type="button" id="openPhotoForm" aria-expanded="false" aria-controls="photoForm"
+                                class="text-xs font-bold text-teal-700 hover:text-teal-900
+                                       focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500
+                                       rounded-md px-1 py-1">
+                                <i class="fa-solid fa-camera mr-1"></i>
+                                Ubah Foto
+                            </button>
+                        </div>
+
+                        <!-- NAMA DAN EMAIL -->
+                        <div class="min-w-0 flex-1 lg:flex-none lg:w-full">
+                            <h2 class="font-black text-slate-800 break-words text-sm sm:text-base">
+                                {{ user.name }}
+                            </h2>
+
+                            <p class="text-xs text-slate-500 mt-1 break-all">
+                                {{ user.email }}
+                            </p>
+
+                            <span class="inline-flex items-center mt-2 px-2.5 py-1 rounded-lg
+                                         text-[11px] sm:text-xs font-bold
+                                         {% if user.is_verified %}
+                                         bg-emerald-50 text-emerald-700
+                                         {% else %}
+                                         bg-amber-50 text-amber-700
+                                         {% endif %}">
+                                {% if user.is_verified %}
+                                <i class="fa-solid fa-circle-check mr-1"></i>
+                                Terverifikasi
+                                {% else %}
+                                <i class="fa-solid fa-clock mr-1"></i>
+                                Belum Terverifikasi
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- FORM FOTO PROFIL -->
+                    <form id="photoForm" method="POST" action="{{ url_for('update_buyer_photo') }}"
+                        enctype="multipart/form-data"
+                        class="hidden mt-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
+                        <h3 class="font-bold text-slate-800 text-sm mb-3">
+                            Ubah Foto Profil
+                        </h3>
+
+                        <label for="profilePhoto" class="profile-label">
+                            Pilih Foto
+                        </label>
+
+                        <input type="file" id="profilePhoto" name="profile_photo"
+                            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" required
+                            class="profile-file">
+
+                        <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+                            JPG, PNG, atau WEBP. Maksimal 2 MB.
+                        </p>
+
+                        <img id="photoPreview" src="" alt="Pratinjau foto profil"
+                            class="hidden w-24 h-24 mt-3 rounded-xl object-cover border border-slate-200">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+                            <button type="submit" class="profile-button bg-teal-700 hover:bg-teal-800 text-white">
+                                <i class="fa-solid fa-floppy-disk mr-1"></i>
+                                Simpan Foto
+                            </button>
+
+                            <button type="button" id="cancelPhotoForm"
+                                class="profile-button border border-slate-200 bg-white text-slate-600 hover:bg-slate-100">
+                                Batal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="border-t border-slate-100"></div>
+
+                <!-- NAVIGASI TAB -->
+                <div class="p-3 sm:p-4 lg:p-3">
+                    <p class="hidden lg:block px-3 mb-2 text-[10px] font-extrabold
+                              uppercase tracking-[0.15em] text-slate-400">
+                        Menu Akun
+                    </p>
+
+                    <nav class="profile-tab-navigation flex gap-2 overflow-x-auto pb-1 lg:pb-0
+                               lg:flex-col lg:overflow-visible" aria-label="Navigasi profil">
+                        <button type="button" class="profile-tab active" data-tab="profil" aria-selected="true">
+                            <i class="fa-solid fa-user w-5 text-center"></i>
+                            <span>Profil</span>
+                        </button>
+
+                        <button type="button" class="profile-tab" data-tab="alamat" aria-selected="false">
+                            <i class="fa-solid fa-location-dot w-5 text-center"></i>
+                            <span>Alamat</span>
+                        </button>
+
+                        <button type="button" class="profile-tab" data-tab="keamanan" aria-selected="false">
+                            <i class="fa-solid fa-shield-halved w-5 text-center"></i>
+                            <span>Keamanan</span>
+                        </button>
+
+                        <button type="button" class="profile-tab" data-tab="aktivitas" aria-selected="false">
+                            <i class="fa-solid fa-bag-shopping w-5 text-center"></i>
+                            <span>Aktivitas Belanja</span>
+                        </button>
+
+                        <button type="button" class="profile-tab" data-tab="ulasan" aria-selected="false">
+                            <i class="fa-solid fa-star w-5 text-center"></i>
+                            <span>Ulasan Saya</span>
+                        </button>
+                    </nav>
+
+                    <div class="hidden lg:block mt-4 p-3 rounded-xl bg-teal-50
+                                text-xs text-teal-800 leading-relaxed">
+                        <i class="fa-solid fa-shield-halved mr-1"></i>
+                        Jaga kerahasiaan kata sandi dan kode OTP Anda.
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- KONTEN UTAMA -->
+        <main class="lg:col-span-9 min-w-0">
+
+            <!-- =========================================
+                 TAB 1: PROFIL
+            ========================================== -->
+            <section id="panel-profil" class="profile-panel">
+
+                <div class="profile-card">
+                    <div class="profile-card-header">
+                        <div>
+                            <h2 class="text-lg sm:text-xl font-black text-slate-800">
+                                Informasi Pribadi
+                            </h2>
+                            <p class="text-sm text-slate-500 mt-1">
+                                Perbarui nama dan informasi kontak Anda.
+                            </p>
+                        </div>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('buyer_profile') }}" class="p-4 sm:p-5 lg:p-6 space-y-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                            <div class="min-w-0">
+                                <label for="name" class="profile-label">
+                                    Nama Lengkap
+                                </label>
+                                <input type="text" id="name" name="name" value="{{ user.name or '' }}" maxlength="120"
+                                    autocomplete="name" required class="profile-input">
+                            </div>
+
+                            <div class="min-w-0">
+                                <label for="email" class="profile-label">
+                                    Alamat Email
+                                </label>
+                                <input type="email" id="email" name="email" value="{{ user.email or '' }}"
+                                    maxlength="160" autocomplete="email" required class="profile-input">
+                            </div>
+
+                            <div class="md:col-span-2 min-w-0">
+                                <label for="phone" class="profile-label">
+                                    Nomor WhatsApp
+                                </label>
+                                <input type="tel" id="phone" name="phone" value="{{ user.phone or '' }}" maxlength="30"
+                                    autocomplete="tel" required class="profile-input">
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row sm:items-center
+                                    sm:justify-between gap-3 pt-4 border-t border-slate-100">
+
+                            <p class="text-xs text-slate-500">
+                                <i class="fa-regular fa-calendar mr-1"></i>
+                                Bergabung:
+                                {% if user.created_at %}
+                                {{ user.created_at.strftime('%d-%m-%Y') }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </p>
+
+                            <button type="submit" class="profile-button bg-teal-700 hover:bg-teal-800 text-white
+                                       w-full sm:w-auto">
+                                <i class="fa-solid fa-floppy-disk mr-2"></i>
+                                Simpan Perubahan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- =========================================
+                 TAB 2: ALAMAT
+            ========================================== -->
+            <section id="panel-alamat" class="profile-panel hidden">
+
+                <div class="profile-card overflow-hidden">
+
+                    <!-- HEADER ALAMAT -->
+                    <div class="p-4 sm:p-5 lg:p-6 border-b border-slate-100">
+                        <div class="flex flex-col sm:flex-row sm:items-center
+                                    sm:justify-between gap-4">
+
+                            <div class="flex items-start gap-3 min-w-0">
+                                <div class="w-11 h-11 shrink-0 rounded-xl bg-teal-50
+                                            text-teal-700 flex items-center justify-center">
+                                    <i class="fa-solid fa-location-dot text-lg"></i>
+                                </div>
+
+                                <div class="min-w-0">
+                                    <h2 class="text-lg sm:text-xl font-black text-slate-800">
+                                        Alamat Pengiriman
+                                    </h2>
+
+                                    <p class="text-sm text-slate-500 mt-1">
+                                        Kelola alamat dan lokasi tujuan pesanan Anda.
+                                    </p>
+
+                                    <p class="text-xs text-slate-400 mt-2">
+                                        <i class="fa-solid fa-bookmark mr-1"></i>
+                                        {{ addresses|length }} alamat tersimpan
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button type="button" id="toggleAddressForm" aria-expanded="false"
+                                aria-controls="addressForm" class="profile-button bg-teal-700 hover:bg-teal-800 text-white
+                                       w-full sm:w-auto shrink-0">
+                                <i class="fa-solid fa-plus"></i>
+                                Tambah Alamat
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-3 sm:p-5 lg:p-6">
+
+                        <!-- DAFTAR ALAMAT -->
+                        {% if addresses %}
+
+                        <div id="addressList" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+
+                            {% for address in addresses %}
+
+                            <article class="address-card
+                                {% if address.is_primary %}
+                                address-card-primary
+                                {% endif %}">
+
+                                <!-- HEADER KARTU -->
+                                <div class="px-4 py-4 border-b border-slate-100
+                                    {% if address.is_primary %}
+                                    bg-teal-50/70
+                                    {% else %}
+                                    bg-slate-50/70
+                                    {% endif %}">
+
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-10 h-10 shrink-0 rounded-xl
+                                            flex items-center justify-center
+                                            {% if address.is_primary %}
+                                            bg-teal-100 text-teal-700
+                                            {% else %}
+                                            bg-white border border-slate-200 text-slate-500
+                                            {% endif %}">
+
+                                            {% if 'kantor' in address.label|lower %}
+                                            <i class="fa-solid fa-briefcase"></i>
+                                            {% elif 'kos' in address.label|lower %}
+                                            <i class="fa-solid fa-building"></i>
+                                            {% else %}
+                                            <i class="fa-solid fa-house"></i>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <h3 class="font-black text-slate-800 break-words">
+                                                    {{ address.label }}
+                                                </h3>
+
+                                                {% if address.is_primary %}
+                                                <span class="inline-flex items-center gap-1 px-2 py-1
+                                                    rounded-md bg-teal-100 text-teal-800
+                                                    text-[10px] font-extrabold uppercase">
+                                                    <i class="fa-solid fa-circle-check"></i>
+                                                    Utama
+                                                </span>
+                                                {% endif %}
+                                            </div>
+
+                                            <p class="text-xs text-slate-500 mt-1">
+                                                Alamat pengiriman
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ISI KARTU -->
+                                <div class="p-4 flex-1 space-y-4">
+
+                                    <!-- PENERIMA -->
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 shrink-0 rounded-lg bg-slate-100
+                                                    text-slate-500 flex items-center justify-center">
+                                            <i class="fa-solid fa-user text-xs"></i>
+                                        </div>
+
+                                        <div class="min-w-0 flex-1">
+                                            <p class="profile-meta-label">Nama Penerima</p>
+                                            <p class="text-sm font-bold text-slate-800 mt-1 break-words">
+                                                {{ address.recipient_name }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- WHATSAPP -->
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 shrink-0 rounded-lg bg-emerald-50
+                                                    text-emerald-600 flex items-center justify-center">
+                                            <i class="fa-brands fa-whatsapp text-sm"></i>
+                                        </div>
+
+                                        <div class="min-w-0 flex-1">
+                                            <p class="profile-meta-label">Nomor WhatsApp</p>
+                                            <p class="text-sm font-semibold text-slate-700 mt-1 break-words">
+                                                {{ address.recipient_phone }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- ALAMAT LENGKAP -->
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 shrink-0 rounded-lg bg-blue-50
+                                                    text-blue-600 flex items-center justify-center">
+                                            <i class="fa-solid fa-map-location-dot text-sm"></i>
+                                        </div>
+
+                                        <div class="min-w-0 flex-1">
+                                            <p class="profile-meta-label">Alamat Lengkap</p>
+
+                                            <p class="text-sm text-slate-600 mt-1 leading-relaxed
+                                                      whitespace-pre-line break-words">
+                                                {{ address.full_address }}
+                                            </p>
+
+                                            {% if address.address_note %}
+                                            <div class="mt-3 p-3 rounded-xl bg-amber-50
+                                                        border border-amber-100">
+                                                <p class="text-[11px] font-bold text-amber-800 mb-1">
+                                                    <i class="fa-solid fa-signs-post mr-1"></i>
+                                                    Catatan / Patokan
+                                                </p>
+
+                                                <p class="text-xs text-amber-900 leading-relaxed
+                                                          whitespace-pre-line break-words">
+                                                    {{ address.address_note }}
+                                                </p>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <!-- TAUTAN PETA -->
+                                    <a href="https://www.openstreetmap.org/?mlat={{ address.latitude }}&amp;mlon={{ address.longitude }}#map=17/{{ address.latitude }}/{{ address.longitude }}"
+                                        target="_blank" rel="noopener noreferrer" class="flex items-center justify-between gap-3 p-3 rounded-xl
+                                               border border-dashed border-teal-200 bg-teal-50/50
+                                               hover:bg-teal-50 transition">
+                                        <span class="flex items-center gap-2 min-w-0 text-xs
+                                                     font-bold text-teal-800">
+                                            <i class="fa-solid fa-location-crosshairs shrink-0"></i>
+                                            Lihat titik lokasi di peta
+                                        </span>
+
+                                        <i class="fa-solid fa-arrow-up-right-from-square
+                                                  text-xs text-teal-600 shrink-0"></i>
+                                    </a>
+                                </div>
+
+                                <!-- TOMBOL AKSI -->
+                                <div class="p-3 border-t border-slate-100 bg-slate-50/70">
+                                    <div class="grid grid-cols-2 gap-2">
+
+                                        <button type="button" class="editAddressButton profile-action-button
+                                                   border border-slate-200 bg-white text-slate-700
+                                                   hover:border-teal-500 hover:text-teal-700"
+                                            data-id="{{ address.id }}" data-label="{{ address.label }}"
+                                            data-name="{{ address.recipient_name }}"
+                                            data-phone="{{ address.recipient_phone }}"
+                                            data-address="{{ address.full_address }}"
+                                            data-note="{{ address.address_note or '' }}"
+                                            data-lat="{{ address.latitude }}" data-lng="{{ address.longitude }}"
+                                            data-edit-url="{{ url_for('edit_buyer_address', address_id=address.id) }}">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                            Edit
+                                        </button>
+
+                                        {% if not address.is_primary %}
+                                        <form method="POST"
+                                            action="{{ url_for('set_primary_address', address_id=address.id) }}"
+                                            class="primaryAddressForm min-w-0">
+                                            <button type="submit" class="profile-action-button bg-teal-700
+                                                       hover:bg-teal-800 text-white">
+                                                <i class="fa-solid fa-check"></i>
+                                                Jadikan Utama
+                                            </button>
+                                        </form>
+                                        {% endif %}
+
+                                        <form method="POST"
+                                            action="{{ url_for('delete_buyer_address', address_id=address.id) }}" class="deleteAddressForm min-w-0
+                                                {% if address.is_primary %}col-span-2{% endif %}">
+                                            <button type="submit" class="profile-action-button border border-red-100
+                                                       bg-red-50 hover:bg-red-100 text-red-600">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                                Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </article>
+
+                            {% endfor %}
+                        </div>
+
+                        {% else %}
+
+                        <!-- ALAMAT KOSONG -->
+                        <div id="addressEmpty" class="border-2 border-dashed border-slate-200 rounded-2xl
+                                   px-4 py-10 sm:py-14 text-center">
+                            <div class="w-16 h-16 mx-auto rounded-2xl bg-teal-50
+                                        text-teal-600 flex items-center justify-center">
+                                <i class="fa-solid fa-map-location-dot text-2xl"></i>
+                            </div>
+
+                            <h3 class="font-black text-slate-800 mt-4">
+                                Belum Ada Alamat Pengiriman
+                            </h3>
+
+                            <p class="text-sm text-slate-500 mt-2 max-w-sm mx-auto leading-relaxed">
+                                Simpan alamat rumah, kantor, atau lokasi tujuan agar proses
+                                pemesanan menjadi lebih mudah.
+                            </p>
+
+                            <button type="button" id="addFirstAddress"
+                                class="profile-button mt-5 bg-teal-700 hover:bg-teal-800 text-white">
+                                <i class="fa-solid fa-plus"></i>
+                                Tambah Alamat Pertama
+                            </button>
+                        </div>
+
+                        {% endif %}
+
+                        <!-- FORM TAMBAH / EDIT ALAMAT -->
+                        <form id="addressForm" method="POST" action="{{ url_for('add_buyer_address') }}" class="hidden mt-5 sm:mt-6 p-4 sm:p-5 lg:p-6
+                                   bg-slate-50 border border-slate-200 rounded-2xl space-y-5">
+                            <input type="hidden" id="addressId" name="address_id">
+
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 shrink-0 rounded-xl bg-teal-100
+                                            text-teal-700 flex items-center justify-center">
+                                    <i class="fa-solid fa-map-pin"></i>
+                                </div>
+
+                                <div class="min-w-0">
+                                    <h3 id="addressFormTitle" class="font-black text-slate-800">
+                                        Tambah Alamat Baru
+                                    </h3>
+
+                                    <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                                        Masukkan informasi penerima dan tentukan titik lokasi
+                                        pengiriman dengan tepat.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                                <div class="min-w-0">
+                                    <label for="addressLabel" class="profile-label">
+                                        Label Alamat
+                                    </label>
+                                    <input type="text" id="addressLabel" name="label" maxlength="50"
+                                        placeholder="Contoh: Rumah" required class="profile-input">
+                                </div>
+
+                                <div class="min-w-0">
+                                    <label for="recipientName" class="profile-label">
+                                        Nama Penerima
+                                    </label>
+                                    <input type="text" id="recipientName" name="recipient_name" maxlength="120"
+                                        placeholder="Nama lengkap penerima" required class="profile-input">
+                                </div>
+
+                                <div class="md:col-span-2 min-w-0">
+                                    <label for="recipientPhone" class="profile-label">
+                                        Nomor WhatsApp Penerima
+                                    </label>
+                                    <input type="tel" id="recipientPhone" name="recipient_phone" maxlength="30"
+                                        placeholder="Contoh: 08xxxxxxxxxx" required class="profile-input">
+                                </div>
+
+                                <div class="md:col-span-2 min-w-0">
+                                    <label for="fullAddress" class="profile-label">
+                                        Alamat Lengkap
+                                    </label>
+                                    <textarea id="fullAddress" name="full_address" rows="3" required
+                                        placeholder="Jalan, desa/kelurahan, kecamatan, kabupaten..."
+                                        class="profile-input resize-y"></textarea>
+                                </div>
+
+                                <div class="md:col-span-2 min-w-0">
+                                    <label for="addressNote" class="profile-label">
+                                        Catatan atau Patokan
+                                    </label>
+                                    <textarea id="addressNote" name="address_note" rows="2"
+                                        placeholder="Contoh: rumah pagar hitam dekat..."
+                                        class="profile-input resize-y"></textarea>
+                                </div>
+
+                                <!-- PETA -->
+                                <div class="md:col-span-2 min-w-0">
+                                    <div class="mb-3">
+                                        <label class="profile-label mb-1">
+                                            Titik Lokasi Pengiriman
+                                        </label>
+
+                                        <p class="text-xs text-slate-500 leading-relaxed">
+                                            Ketuk peta atau geser penanda untuk menentukan lokasi.
+                                        </p>
+                                    </div>
+
+                                    <div id="addressMap" class="w-full h-64 sm:h-80 rounded-xl
+                                               border border-slate-200 bg-slate-100 overflow-hidden"></div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                                        <div class="min-w-0">
+                                            <label for="addressLatitude" class="profile-label text-xs">
+                                                Latitude
+                                            </label>
+                                            <input type="text" id="addressLatitude" name="latitude" readonly required
+                                                placeholder="Pilih titik pada peta" class="profile-input bg-slate-100">
+                                        </div>
+
+                                        <div class="min-w-0">
+                                            <label for="addressLongitude" class="profile-label text-xs">
+                                                Longitude
+                                            </label>
+                                            <input type="text" id="addressLongitude" name="longitude" readonly required
+                                                placeholder="Pilih titik pada peta" class="profile-input bg-slate-100">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ALAMAT UTAMA -->
+                                <div class="md:col-span-2">
+                                    <label class="flex items-start gap-3 p-4 rounded-xl
+                                                  border border-slate-200 bg-white cursor-pointer
+                                                  hover:border-teal-300 transition">
+                                        <input type="checkbox" id="isPrimaryAddress" name="is_primary" value="1"
+                                            class="w-4 h-4 mt-0.5 accent-teal-700 shrink-0">
+
+                                        <span>
+                                            <span class="block text-sm font-bold text-slate-800">
+                                                Jadikan alamat utama
+                                            </span>
+                                            <span class="block text-xs text-slate-500 mt-1">
+                                                Gunakan alamat ini sebagai alamat pengiriman utama.
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col-reverse sm:flex-row sm:justify-end
+                                        gap-2 pt-4 border-t border-slate-200">
+                                <button type="button" id="cancelAddressForm" class="profile-button border border-slate-200 bg-white
+                                           text-slate-600 hover:bg-slate-100">
+                                    Batal
+                                </button>
+
+                                <button type="submit" id="saveAddressButton"
+                                    class="profile-button bg-teal-700 hover:bg-teal-800 text-white">
+                                    <i class="fa-solid fa-floppy-disk mr-1"></i>
+                                    Simpan Alamat
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =========================================
+                 TAB 3: KEAMANAN
+            ========================================== -->
+            <section id="panel-keamanan" class="profile-panel hidden">
+
+                <div class="profile-card">
+                    <div class="profile-card-header">
+                        <div>
+                            <h2 class="text-lg sm:text-xl font-black text-slate-800">
+                                Keamanan Akun
+                            </h2>
+                            <p class="text-sm text-slate-500 mt-1">
+                                Kelola kata sandi dan verifikasi akun.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 sm:p-5 lg:p-6 space-y-5">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="p-4 border border-slate-200 rounded-xl">
+                                <p class="text-xs text-slate-500">
+                                    Status Verifikasi
+                                </p>
+
+                                <p class="font-bold mt-2
+                                    {% if user.is_verified %}
+                                    text-emerald-700
+                                    {% else %}
+                                    text-amber-700
+                                    {% endif %}">
+                                    {% if user.is_verified %}
+                                    <i class="fa-solid fa-circle-check mr-1"></i>
+                                    Terverifikasi
+                                    {% else %}
+                                    <i class="fa-solid fa-clock mr-1"></i>
+                                    Belum Terverifikasi
+                                    {% endif %}
+                                </p>
+                            </div>
+
+                            <div class="p-4 border border-slate-200 rounded-xl min-w-0">
+                                <p class="text-xs text-slate-500">
+                                    Email Akun
+                                </p>
+                                <p class="font-semibold text-slate-800 mt-2 break-all">
+                                    {{ user.email }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <form id="passwordForm" class="space-y-4 border-t border-slate-100 pt-5">
+                            <div>
+                                <h3 class="font-bold text-slate-800">
+                                    Ubah Kata Sandi
+                                </h3>
+                                <p class="text-sm text-slate-500 mt-1">
+                                    Gunakan kata sandi yang kuat dan tidak mudah ditebak.
+                                </p>
+                            </div>
+
+                            <div>
+                                <label for="oldPassword" class="profile-label">
+                                    Kata Sandi Saat Ini
+                                </label>
+                                <input type="password" id="oldPassword" name="old_password"
+                                    autocomplete="current-password" required class="profile-input">
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="min-w-0">
+                                    <label for="newPassword" class="profile-label">
+                                        Kata Sandi Baru
+                                    </label>
+                                    <input type="password" id="newPassword" name="new_password" minlength="8"
+                                        autocomplete="new-password" required class="profile-input">
+                                    <p class="text-xs text-slate-400 mt-1">
+                                        Minimal 8 karakter.
+                                    </p>
+                                </div>
+
+                                <div class="min-w-0">
+                                    <label for="confirmPassword" class="profile-label">
+                                        Konfirmasi Kata Sandi
+                                    </label>
+                                    <input type="password" id="confirmPassword" name="confirm_password" minlength="8"
+                                        autocomplete="new-password" required class="profile-input">
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button type="submit" class="profile-button w-full sm:w-auto
+                                           bg-slate-800 hover:bg-slate-900 text-white">
+                                    <i class="fa-solid fa-lock mr-1"></i>
+                                    Perbarui Kata Sandi
+                                </button>
+                            </div>
+
+                            <p class="text-xs text-slate-400 leading-relaxed">
+                                Fitur ini belum terhubung ke backend. Kata sandi belum akan
+                                diubah sampai route pemrosesan tersedia.
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =========================================
+                 TAB 4: AKTIVITAS BELANJA
+            ========================================== -->
+            <section id="panel-aktivitas" class="profile-panel hidden">
+
+                <div class="profile-card">
+                    <div class="profile-card-header">
+                        <div>
+                            <h2 class="text-lg sm:text-xl font-black text-slate-800">
+                                Aktivitas Belanja
+                            </h2>
+                            <p class="text-sm text-slate-500 mt-1">
+                                Ringkasan transaksi dan riwayat pesanan.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 sm:p-5 lg:p-6">
+
+                        <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+
+                            <div class="p-3 sm:p-4 rounded-xl bg-blue-50 min-w-0">
+                                <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-700
+                                            flex items-center justify-center">
+                                    <i class="fa-solid fa-receipt"></i>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-3">
+                                    Total Pesanan
+                                </p>
+                                <p class="text-2xl sm:text-3xl font-black text-slate-800 mt-1">
+                                    {{ total_orders }}
+                                </p>
+                            </div>
+
+                            <div class="p-3 sm:p-4 rounded-xl bg-amber-50 min-w-0">
+                                <div class="w-9 h-9 rounded-lg bg-amber-100 text-amber-700
+                                            flex items-center justify-center">
+                                    <i class="fa-solid fa-clock"></i>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-3 leading-relaxed">
+                                    Menunggu Pembayaran
+                                </p>
+                                <p class="text-2xl sm:text-3xl font-black text-slate-800 mt-1">
+                                    {{ pending_orders }}
+                                </p>
+                            </div>
+
+                            <div class="p-3 sm:p-4 rounded-xl bg-indigo-50 min-w-0">
+                                <div class="w-9 h-9 rounded-lg bg-indigo-100 text-indigo-700
+                                            flex items-center justify-center">
+                                    <i class="fa-solid fa-truck-fast"></i>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-3 leading-relaxed">
+                                    Sedang Diproses
+                                </p>
+                                <p class="text-2xl sm:text-3xl font-black text-slate-800 mt-1">
+                                    {{ processing_orders }}
+                                </p>
+                            </div>
+
+                            <div class="p-3 sm:p-4 rounded-xl bg-emerald-50 min-w-0">
+                                <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700
+                                            flex items-center justify-center">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-3">
+                                    Selesai
+                                </p>
+                                <p class="text-2xl sm:text-3xl font-black text-slate-800 mt-1">
+                                    {{ completed_orders }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 flex flex-col sm:flex-row sm:items-center
+                                    sm:justify-between gap-4 p-4 rounded-xl
+                                    border border-slate-200">
+                            <div class="min-w-0">
+                                <h3 class="font-bold text-slate-800">
+                                    Riwayat Pesanan
+                                </h3>
+                                <p class="text-sm text-slate-500 mt-1">
+                                    Periksa status dan detail transaksi Anda.
+                                </p>
+                            </div>
+
+                            <a href="{{ url_for('orders') }}" class="profile-button bg-teal-700 hover:bg-teal-800
+                                       text-white w-full sm:w-auto shrink-0">
+                                <i class="fa-solid fa-receipt mr-1"></i>
+                                Lihat Pesanan
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =========================================
+                 TAB 5: ULASAN
+            ========================================== -->
+            <section id="panel-ulasan" class="profile-panel hidden">
+
+                <div class="profile-card overflow-hidden">
+                    <div class="profile-card-header">
+                        <div>
+                            <h2 class="text-lg sm:text-xl font-black text-slate-800">
+                                Ulasan Saya
+                            </h2>
+                            <p class="text-sm text-slate-500 mt-1">
+                                Rating dan komentar produk yang pernah Anda berikan.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 sm:p-5 lg:p-6">
+
+                        {% if reviews %}
+
+                        <div class="space-y-4">
+                            {% for review, product in reviews %}
+
+                            <article class="p-4 rounded-xl border border-slate-200
+                                            hover:border-teal-200 transition">
+
+                                <div class="flex flex-col sm:flex-row sm:items-start
+                                            sm:justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <h3 class="font-bold text-slate-800 break-words">
+                                            {{ product.name }}
+                                        </h3>
+
+                                        {% if review.created_at %}
+                                        <p class="text-xs text-slate-500 mt-1">
+                                            <i class="fa-regular fa-calendar mr-1"></i>
+                                            {{ review.created_at.strftime('%d-%m-%Y') }}
+                                        </p>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="flex items-center gap-1 text-amber-500 shrink-0">
+                                        {% for star in range(1, 6) %}
+                                        {% if star <= review.product_rating %} <i class="fa-solid fa-star"></i>
+                                            {% else %}
+                                            <i class="fa-regular fa-star"></i>
+                                            {% endif %}
+                                            {% endfor %}
+
+                                            <span class="text-sm font-bold text-slate-700 ml-1">
+                                                {{ review.product_rating }}/5
+                                            </span>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 p-3 sm:p-4 rounded-lg bg-slate-50">
+                                    {% if review.comment %}
+                                    <p class="text-sm text-slate-600 whitespace-pre-line break-words leading-relaxed">
+                                        {{ review.comment }}
+                                    </p>
+                                    {% else %}
+                                    <p class="text-sm text-slate-400 italic">
+                                        Tidak ada komentar.
+                                    </p>
+                                    {% endif %}
+                                </div>
+                            </article>
+
+                            {% endfor %}
+                        </div>
+
+                        {% else %}
+
+                        <div class="px-3 py-8 sm:py-12 text-center">
+                            <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-50
+                                        text-amber-500 flex items-center justify-center">
+                                <i class="fa-regular fa-star text-2xl"></i>
+                            </div>
+
+                            <h3 class="font-bold text-slate-800 mt-4">
+                                Belum Ada Ulasan
+                            </h3>
+
+                            <p class="text-sm text-slate-500 mt-2 max-w-sm mx-auto leading-relaxed">
+                                Anda belum memberikan ulasan produk. Rating dan komentar
+                                yang Anda berikan akan ditampilkan di sini.
+                            </p>
+
+                            <a href="{{ url_for('orders') }}" class="profile-button inline-flex mt-4
+                                       bg-teal-700 hover:bg-teal-800 text-white">
+                                <i class="fa-solid fa-receipt"></i>
+                                Lihat Pesanan
+                            </a>
+                        </div>
+
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<!-- LEAFLET CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+    /* =========================================
+       DASAR HALAMAN
+    ========================================= */
+
+    .profile-page {
+        min-width: 0;
+        padding-top: 0px !important;
+    }
+
+    .profile-card {
+        min-width: 0;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+    }
+
+    .profile-card-header {
+        padding: 1rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    @media (min-width: 640px) {
+        .profile-card-header {
+            padding: 1.25rem;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .profile-card-header {
+            padding: 1.5rem;
+        }
+    }
+
+    .profile-sidebar {
+        min-width: 0;
+    }
+
+    /* =========================================
+       NAVIGASI TAB RESPONSIF
+    ========================================= */
+
+    .profile-tab-navigation {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .profile-tab {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.65rem;
+        flex: 0 0 auto;
+        min-height: 42px;
+        padding: 0.7rem 0.85rem;
+        border-radius: 0.7rem;
+        border: 1px solid transparent;
+        color: #475569;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        white-space: nowrap;
+        text-align: left;
+        transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        cursor: pointer;
+    }
+
+    .profile-tab:hover {
+        background: #f8fafc;
+        color: #0f766e;
+    }
+
+    .profile-tab.active {
+        background: #f0fdfa;
+        color: #0f766e;
+        border-color: #ccfbf1;
+        font-weight: 700;
+    }
+
+    .profile-tab:focus-visible,
+    .profile-button:focus-visible,
+    .profile-action-button:focus-visible {
+        outline: 2px solid #0d9488;
+        outline-offset: 2px;
+    }
+
+    @media (min-width: 1024px) {
+        .profile-tab {
+            width: 100%;
+            padding: 0.8rem 0.9rem;
+            font-size: 0.875rem;
+        }
+    }
+
+    /* =========================================
+       INPUT DAN LABEL
+    ========================================= */
+
+    .profile-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #334155;
+        font-size: 0.8125rem;
+        font-weight: 700;
+    }
+
+    .profile-input {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        min-height: 44px;
+        padding: 0.7rem 0.85rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.7rem;
+        background: #ffffff;
+        color: #1e293b;
+        font-family: inherit;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .profile-input:focus {
+        border-color: #0d9488;
+        box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+    }
+
+    .profile-input:disabled {
+        cursor: not-allowed;
+        background: #f1f5f9;
+    }
+
+    .profile-input[readonly] {
+        cursor: default;
+        background: #f1f5f9;
+    }
+
+    .profile-file {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        color: #475569;
+        font-size: 0.8125rem;
+    }
+
+    .profile-file::file-selector-button {
+        margin-right: 0.5rem;
+        margin-bottom: 0.35rem;
+        padding: 0.55rem 0.7rem;
+        border: 0;
+        border-radius: 0.5rem;
+        background: #ccfbf1;
+        color: #115e59;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    /* =========================================
+       TOMBOL
+    ========================================= */
+
+    .profile-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        min-height: 42px;
+        padding: 0.7rem 1rem;
+        border: 1px solid transparent;
+        border-radius: 0.7rem;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        line-height: 1.4;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    }
+
+    .profile-action-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        width: 100%;
+        min-width: 0;
+        min-height: 40px;
+        padding: 0.6rem 0.5rem;
+        border: 1px solid transparent;
+        border-radius: 0.6rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        line-height: 1.35;
+        text-align: center;
+        overflow-wrap: anywhere;
+        cursor: pointer;
+        transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    }
+
+    .profile-meta-label {
+        color: #94a3b8;
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    /* =========================================
+       KARTU ALAMAT
+    ========================================= */
+
+    .address-card {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        background: #ffffff;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .address-card:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 5px 18px rgba(15, 23, 42, 0.05);
+    }
+
+    .address-card-primary {
+        border-color: #99f6e4;
+        box-shadow: 0 0 0 1px rgba(153, 246, 228, 0.25);
+    }
+
+    /* =========================================
+       LEAFLET
+    ========================================= */
+
+    #addressMap {
+        z-index: 1;
+        width: 100%;
+        height: 16rem;
+        background: #f1f5f9;
+    }
+
+    .leaflet-container {
+        width: 100%;
+        height: 100%;
+        font-family: inherit;
+    }
+
+    @media (min-width: 640px) {
+        #addressMap {
+            height: 20rem;
+        }
+    }
+
+    /* =========================================
+       RESPONSIF MOBILE
+    ========================================= */
+
+    @media (max-width: 639px) {
+        .profile-page {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+
+        .profile-card,
+        .profile-sidebar {
+            border-radius: 0.875rem;
+        }
+
+        .profile-tab {
+            padding: 0.65rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .profile-button {
+            padding-left: 0.8rem;
+            padding-right: 0.8rem;
+        }
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        html {
+            scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+            transition-duration: 0.01ms !important;
+        }
+    }
+
+    /* =========================================
+   DESKTOP: SIDEBAR TETAP, KONTEN KANAN DIGULIR
+========================================= */
+
+    @media (min-width: 1024px) {
+        .profile-page {
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .profile-page>header {
+            flex-shrink: 0;
+        }
+
+        .profile-page>.grid {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            align-items: stretch;
+        }
+
+        .profile-page>.grid>aside {
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .profile-page .profile-sidebar {
+            position: static;
+            height: 100%;
+            max-height: 100%;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .profile-page>.grid>main {
+            min-height: 0;
+            height: 100%;
+            overflow-y: auto;
+            overscroll-behavior-y: contain;
+            scrollbar-width: thin;
+            padding-right: 4px;
+        }
+    }
+</style>
+
+<!-- LEAFLET JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        /* =========================================
+           HELPER
+        ========================================= */
+
+        function showMessage(message) {
+            alert(message);
+        }
+
+        /* =========================================
+           FOTO PROFIL
+        ========================================= */
+
+        const openPhotoForm = document.getElementById('openPhotoForm');
+        const photoForm = document.getElementById('photoForm');
+        const cancelPhotoForm = document.getElementById('cancelPhotoForm');
+        const profilePhoto = document.getElementById('profilePhoto');
+        const photoPreview = document.getElementById('photoPreview');
+
+        let photoPreviewUrl = null;
+
+        function clearPhotoPreview() {
+            if (photoPreviewUrl) {
+                URL.revokeObjectURL(photoPreviewUrl);
+                photoPreviewUrl = null;
+            }
+
+            if (photoPreview) {
+                photoPreview.src = '';
+                photoPreview.classList.add('hidden');
+            }
+        }
+
+        if (openPhotoForm && photoForm && cancelPhotoForm &&
+            profilePhoto && photoPreview) {
+
+            openPhotoForm.addEventListener('click', function () {
+                const isHidden = photoForm.classList.contains('hidden');
+
+                photoForm.classList.toggle('hidden', !isHidden);
+                openPhotoForm.setAttribute('aria-expanded', String(isHidden));
+
+                if (isHidden) {
+                    photoForm.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest'
+                    });
+                }
+            });
+
+            cancelPhotoForm.addEventListener('click', function () {
+                photoForm.classList.add('hidden');
+                openPhotoForm.setAttribute('aria-expanded', 'false');
+                profilePhoto.value = '';
+                clearPhotoPreview();
+            });
+
+            profilePhoto.addEventListener('change', function () {
+                clearPhotoPreview();
+
+                const file = this.files && this.files[0];
+
+                if (!file) {
+                    return;
+                }
+
+                const allowedTypes = [
+                    'image/jpeg',
+                    'image/png',
+                    'image/webp'
+                ];
+
+                const extension = file.name.split('.').pop().toLowerCase();
+                const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+
+                if (
+                    !allowedTypes.includes(file.type) ||
+                    !allowedExtensions.includes(extension)
+                ) {
+                    showMessage('Pilih foto berformat JPG, PNG, atau WEBP.');
+                    this.value = '';
+                    return;
+                }
+
+                if (file.size === 0 || file.size > 2 * 1024 * 1024) {
+                    showMessage('Ukuran foto harus lebih dari 0 dan maksimal 2 MB.');
+                    this.value = '';
+                    return;
+                }
+
+                photoPreviewUrl = URL.createObjectURL(file);
+                photoPreview.src = photoPreviewUrl;
+                photoPreview.classList.remove('hidden');
+            });
+
+            photoForm.addEventListener('submit', function (event) {
+                const file = profilePhoto.files && profilePhoto.files[0];
+
+                if (!file) {
+                    event.preventDefault();
+                    showMessage('Silakan pilih foto terlebih dahulu.');
+                    return;
+                }
+
+                if (file.size === 0 || file.size > 2 * 1024 * 1024) {
+                    event.preventDefault();
+                    showMessage('Ukuran foto maksimal 2 MB.');
+                }
+            });
+        }
+
+        /* =========================================
+           NAVIGASI TAB
+        ========================================= */
+
+        const tabButtons = document.querySelectorAll('.profile-tab');
+        const panels = document.querySelectorAll('.profile-panel');
+
+        /* =========================================
+           FORM ALAMAT DAN PETA
+        ========================================= */
+
+        const addressForm = document.getElementById('addressForm');
+        const toggleAddressForm = document.getElementById('toggleAddressForm');
+        const addFirstAddress = document.getElementById('addFirstAddress');
+        const cancelAddressForm = document.getElementById('cancelAddressForm');
+        const addressEmpty = document.getElementById('addressEmpty');
+        const addressList = document.getElementById('addressList');
+
+        const addressId = document.getElementById('addressId');
+        const addressFormTitle = document.getElementById('addressFormTitle');
+        const saveAddressButton = document.getElementById('saveAddressButton');
+
+        const addressLabel = document.getElementById('addressLabel');
+        const recipientName = document.getElementById('recipientName');
+        const recipientPhone = document.getElementById('recipientPhone');
+        const fullAddress = document.getElementById('fullAddress');
+        const addressNote = document.getElementById('addressNote');
+        const addressLatitude = document.getElementById('addressLatitude');
+        const addressLongitude = document.getElementById('addressLongitude');
+        const isPrimaryAddress = document.getElementById('isPrimaryAddress');
+
+        const addAddressUrl = "{{ url_for('add_buyer_address') }}";
+
+        /* Titik awal peta di sekitar Remboken, Sulawesi Utara. */
+        const defaultLatitude = 1.234206;
+        const defaultLongitude = 124.865409;
+
+        let addressMap = null;
+        let addressMarker = null;
+
+        function activateTab(tabName) {
+            tabButtons.forEach(function (button) {
+                const isActive = button.dataset.tab === tabName;
+
+                button.classList.toggle('active', isActive);
+                button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+
+            panels.forEach(function (panel) {
+                panel.classList.toggle(
+                    'hidden',
+                    panel.id !== 'panel-' + tabName
+                );
+            });
+
+            if (tabName === 'alamat' && addressMap) {
+                requestAnimationFrame(function () {
+                    addressMap.invalidateSize();
+                });
+
+                setTimeout(function () {
+                    if (addressMap) {
+                        addressMap.invalidateSize();
+                    }
+                }, 200);
+            }
+        }
+
+        tabButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                activateTab(this.dataset.tab);
+            });
+        });
+
+        function updateAddressCoordinates(lat, lng) {
+            if (!addressLatitude || !addressLongitude) {
+                return;
+            }
+
+            addressLatitude.value = Number(lat).toFixed(7);
+            addressLongitude.value = Number(lng).toFixed(7);
+        }
+
+        function setAddressMarker(lat, lng) {
+            if (!addressMap || typeof L === 'undefined') {
+                return;
+            }
+
+            if (addressMarker) {
+                addressMarker.setLatLng([lat, lng]);
+            } else {
+                addressMarker = L.marker([lat, lng], {
+                    draggable: true
+                }).addTo(addressMap);
+
+                addressMarker.on('dragend', function (event) {
+                    const position = event.target.getLatLng();
+
+                    updateAddressCoordinates(
+                        position.lat,
+                        position.lng
+                    );
+                });
+            }
+
+            updateAddressCoordinates(lat, lng);
+        }
+
+        function initializeAddressMap(lat, lng) {
+            if (typeof L === 'undefined') {
+                showMessage('Peta gagal dimuat. Periksa koneksi internet Anda.');
+                return false;
+            }
+
+            const mapElement = document.getElementById('addressMap');
+
+            if (!mapElement) {
+                return false;
+            }
+
+            if (!addressMap) {
+                addressMap = L.map(mapElement).setView([lat, lng], 15);
+
+                L.tileLayer(
+                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    {
+                        maxZoom: 19,
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }
+                ).addTo(addressMap);
+
+                addressMap.on('click', function (event) {
+                    setAddressMarker(
+                        event.latlng.lat,
+                        event.latlng.lng
+                    );
+                });
+            }
+
+            addressMap.setView([lat, lng], 16);
+
+            setTimeout(function () {
+                if (addressMap) {
+                    addressMap.invalidateSize();
+                }
+            }, 200);
+
+            return true;
+        }
+
+        function resetAddressMarker() {
+            if (addressMarker && addressMap) {
+                addressMap.removeLayer(addressMarker);
+            }
+
+            addressMarker = null;
+        }
+
+        function openAddressForm() {
+            if (!addressForm) {
+                return;
+            }
+
+            addressForm.reset();
+
+            addressId.value = '';
+            addressForm.action = addAddressUrl;
+
+            addressFormTitle.textContent = 'Tambah Alamat Baru';
+
+            saveAddressButton.innerHTML =
+                '<i class="fa-solid fa-floppy-disk mr-1"></i> Simpan Alamat';
+
+            addressLatitude.value = '';
+            addressLongitude.value = '';
+
+            resetAddressMarker();
+
+            addressForm.classList.remove('hidden');
+
+            if (toggleAddressForm) {
+                toggleAddressForm.setAttribute('aria-expanded', 'true');
+            }
+
+            if (addressEmpty) {
+                addressEmpty.classList.add('hidden');
+            }
+
+            initializeAddressMap(defaultLatitude, defaultLongitude);
+
+            setTimeout(function () {
+                if (addressMap) {
+                    addressMap.invalidateSize();
+                }
+            }, 250);
+
+            addressForm.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        function closeAddressForm() {
+            if (!addressForm) {
+                return;
+            }
+
+            addressForm.classList.add('hidden');
+
+            if (toggleAddressForm) {
+                toggleAddressForm.setAttribute('aria-expanded', 'false');
+            }
+
+            if (addressEmpty && !addressList) {
+                addressEmpty.classList.remove('hidden');
+            }
+        }
+
+        if (toggleAddressForm) {
+            toggleAddressForm.addEventListener('click', function () {
+                if (!addressForm) {
+                    return;
+                }
+
+                if (!addressForm.classList.contains('hidden')) {
+                    closeAddressForm();
+                    return;
+                }
+
+                openAddressForm();
+            });
+        }
+
+        if (addFirstAddress) {
+            addFirstAddress.addEventListener('click', function () {
+                if (toggleAddressForm) {
+                    activateTab('alamat');
+                }
+
+                openAddressForm();
+            });
+        }
+
+        if (cancelAddressForm) {
+            cancelAddressForm.addEventListener('click', closeAddressForm);
+        }
+
+        /* =========================================
+           EDIT ALAMAT
+        ========================================= */
+
+        document.querySelectorAll('.editAddressButton').forEach(function (button) {
+            button.addEventListener('click', function () {
+                if (!addressForm) {
+                    return;
+                }
+
+                const lat = Number(this.dataset.lat);
+                const lng = Number(this.dataset.lng);
+
+                addressForm.reset();
+
+                addressId.value = this.dataset.id || '';
+                addressLabel.value = this.dataset.label || '';
+                recipientName.value = this.dataset.name || '';
+                recipientPhone.value = this.dataset.phone || '';
+                fullAddress.value = this.dataset.address || '';
+                addressNote.value = this.dataset.note || '';
+
+                addressForm.action = this.dataset.editUrl;
+
+                addressFormTitle.textContent = 'Edit Alamat';
+
+                saveAddressButton.innerHTML =
+                    '<i class="fa-solid fa-floppy-disk mr-1"></i> Simpan Perubahan';
+
+                isPrimaryAddress.checked = false;
+
+                addressForm.classList.remove('hidden');
+
+                if (toggleAddressForm) {
+                    toggleAddressForm.setAttribute('aria-expanded', 'true');
+                }
+
+                if (addressEmpty) {
+                    addressEmpty.classList.add('hidden');
+                }
+
+                resetAddressMarker();
+
+                if (
+                    Number.isFinite(lat) &&
+                    Number.isFinite(lng) &&
+                    lat >= -90 && lat <= 90 &&
+                    lng >= -180 && lng <= 180
+                ) {
+                    initializeAddressMap(lat, lng);
+                    setAddressMarker(lat, lng);
+                } else {
+                    addressLatitude.value = '';
+                    addressLongitude.value = '';
+
+                    initializeAddressMap(
+                        defaultLatitude,
+                        defaultLongitude
+                    );
+                }
+
+                setTimeout(function () {
+                    if (addressMap) {
+                        addressMap.invalidateSize();
+                    }
+                }, 250);
+
+                addressForm.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+        });
+
+        /* =========================================
+           VALIDASI FORM ALAMAT
+        ========================================= */
+
+        if (addressForm) {
+            addressForm.addEventListener('submit', function (event) {
+                const lat = addressLatitude.value.trim();
+                const lng = addressLongitude.value.trim();
+
+                if (
+                    !lat || !lng ||
+                    !Number.isFinite(Number(lat)) ||
+                    !Number.isFinite(Number(lng))
+                ) {
+                    event.preventDefault();
+                    showMessage('Pilih titik lokasi pengiriman pada peta terlebih dahulu.');
+                    return;
+                }
+
+                if (
+                    Number(lat) < -90 || Number(lat) > 90 ||
+                    Number(lng) < -180 || Number(lng) > 180
+                ) {
+                    event.preventDefault();
+                    showMessage('Koordinat lokasi tidak valid.');
+                }
+            });
+        }
+
+        /* =========================================
+           KONFIRMASI HAPUS ALAMAT
+        ========================================= */
+
+        document.querySelectorAll('.deleteAddressForm').forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!confirm('Apakah Anda yakin ingin menghapus alamat ini?')) {
+                    event.preventDefault();
+                }
+            });
+        });
+
+        /* =========================================
+           KONFIRMASI ALAMAT UTAMA
+        ========================================= */
+
+        document.querySelectorAll('.primaryAddressForm').forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!confirm('Jadikan alamat ini sebagai alamat utama?')) {
+                    event.preventDefault();
+                }
+            });
+        });
+
+        /* =========================================
+           FORM KATA SANDI
+           Belum terhubung ke backend.
+        ========================================= */
+
+        const passwordForm = document.getElementById('passwordForm');
+
+        if (passwordForm) {
+            passwordForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                const oldPassword =
+                    document.getElementById('oldPassword').value;
+
+                const newPassword =
+                    document.getElementById('newPassword').value;
+
+                const confirmPassword =
+                    document.getElementById('confirmPassword').value;
+
+                if (!oldPassword || !newPassword || !confirmPassword) {
+                    showMessage('Semua kolom kata sandi wajib diisi.');
+                    return;
+                }
+
+                if (newPassword.length < 8) {
+                    showMessage('Kata sandi baru minimal 8 karakter.');
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    showMessage('Konfirmasi kata sandi tidak cocok.');
+                    return;
+                }
+
+                showMessage(
+                    'Validasi berhasil. Fitur ubah kata sandi belum terhubung ke backend.'
+                );
+            });
+        }
+
+    });
+</script>
+{% endblock %}

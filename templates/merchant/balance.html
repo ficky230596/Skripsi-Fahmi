@@ -1,0 +1,14 @@
+{% extends 'base.html' %}{% block content %}<h2>Saldo & Pencairan</h2>
+<div class="stat mb-4"><span>Saldo tersedia</span><b>Rp {{'{:,.0f}'.format((balance.available if balance else
+        0)|float)}}</b></div>
+<div class="card p-3">
+    <form method="post" action="{{url_for('merchant_withdraw')}}"><input class="form-control mb-2" name="amount"
+            type="number" placeholder="Jumlah" required><input class="form-control mb-2" name="bank_name"
+            placeholder="Bank" required><input class="form-control mb-2" name="bank_account"
+            placeholder="Nomor rekening" required><input class="form-control mb-2" name="account_name"
+            placeholder="Nama pemilik rekening" required><button class="btn btn-success">Ajukan Pencairan</button>
+    </form>
+</div>
+<h5 class="mt-4">Riwayat</h5>{% for w in withdrawals %}<div class="card mb-2">
+    <div class="card-body">Rp {{'{:,.0f}'.format(w.amount|float)}} — {{w.status}}</div>
+</div>{% endfor %}{% endblock %}

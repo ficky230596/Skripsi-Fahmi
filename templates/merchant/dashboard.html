@@ -1,0 +1,14 @@
+{% extends 'base.html' %}{% block content %}<h2>Dashboard Pedagang</h2>
+<div class="alert alert-{{'success' if merchant.verification_status=='approved' else 'warning'}}">Status verifikasi:
+    <b>{{merchant.verification_status}}</b></div>
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="stat"><span>Produk</span><b>{{products}}</b></div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat"><span>Saldo tersedia</span><b>Rp {{'{:,.0f}'.format((balance.available if balance else
+                0)|float)}}</b></div>
+    </div>
+    <div class="col-md-4"><a class="stat text-decoration-none" href="{{url_for('merchant_products')}}"><span>Kelola
+                Produk</span><b>→</b></a></div>
+</div>{% endblock %}

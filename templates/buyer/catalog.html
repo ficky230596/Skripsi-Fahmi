@@ -1,0 +1,1778 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto space-y-4">
+
+    <!-- ========================================================= -->
+    <!-- HEADER -->
+    <!-- ========================================================= -->
+
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5">
+
+        <div class="flex flex-col gap-4">
+
+            <!-- TITLE -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
+                <div>
+
+                    <div class="flex items-center gap-2 mb-1.5">
+
+                        <span class="w-2 h-2 rounded-full bg-teal-500"></span>
+
+                        <span class="text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-400">
+                            Marketplace
+                        </span>
+
+                    </div>
+
+                    <h1 class="text-xl sm:text-2xl font-black text-slate-900">
+                        Katalog Produk
+                    </h1>
+
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                        Temukan berbagai produk dari pedagang Pasar Remboken.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- SEARCH -->
+            <!-- ================================================= -->
+
+            <div>
+
+                <label for="productSearch" class="block text-xs font-bold text-slate-500 mb-1.5">
+
+                    Cari Produk
+
+                </label>
+
+                <div class="relative">
+
+                    <i class="fa-solid fa-magnifying-glass
+                               absolute
+                               left-3.5
+                               top-1/2
+                               -translate-y-1/2
+                               text-slate-400
+                               text-sm">
+                    </i>
+
+                    <input type="text" id="productSearch" placeholder="Cari nama produk atau toko..." class="w-full
+                               bg-white
+                               border border-slate-200
+                               rounded-xl
+                               pl-10
+                               pr-10
+                               py-2.5
+                               text-sm
+                               font-medium
+                               text-slate-700
+                               placeholder:text-slate-400
+                               outline-none
+                               focus:ring-2
+                               focus:ring-teal-500
+                               focus:border-teal-500
+                               transition">
+
+                    <button type="button" id="clearSearch" class="hidden
+                               absolute
+                               right-2.5
+                               top-1/2
+                               -translate-y-1/2
+                               w-7
+                               h-7
+                               rounded-lg
+                               text-slate-400
+                               hover:bg-slate-100
+                               hover:text-slate-600
+                               transition">
+
+                        <i class="fa-solid fa-xmark text-xs"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- FILTER TOGGLE -->
+            <!-- ================================================= -->
+
+            <div class="flex items-center justify-between gap-3">
+
+                <button type="button" id="filterToggle" aria-expanded="false" class="inline-flex
+                           items-center
+                           gap-2
+                           px-4
+                           py-2.5
+                           bg-slate-50
+                           hover:bg-slate-100
+                           border border-slate-200
+                           rounded-xl
+                           text-sm
+                           font-bold
+                           text-slate-700
+                           transition">
+
+                    <i id="filterIcon" class="fa-solid fa-sliders text-teal-600">
+                    </i>
+
+                    <span>
+                        Filter & Urutkan
+                    </span>
+
+                    <i id="filterChevron" class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform">
+                    </i>
+
+                </button>
+
+
+                <p id="productCount" class="text-xs font-bold text-slate-400 whitespace-nowrap">
+
+                    {{ products|length }} produk
+
+                </p>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- FILTER PANEL -->
+            <!-- ================================================= -->
+
+            <div id="filterPanel" class="hidden border-t border-slate-100 pt-4">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+
+                    <!-- CATEGORY -->
+
+                    <div>
+
+                        <label for="cat" class="block text-xs font-bold text-slate-500 mb-1.5">
+
+                            Kategori
+
+                        </label>
+
+                        <div class="relative">
+
+                            <select id="cat" class="w-full
+                                       appearance-none
+                                       bg-white
+                                       border border-slate-200
+                                       rounded-xl
+                                       px-3.5
+                                       py-2.5
+                                       pr-9
+                                       text-sm
+                                       font-semibold
+                                       text-slate-700
+                                       outline-none
+                                       focus:ring-2
+                                       focus:ring-teal-500
+                                       focus:border-teal-500
+                                       transition">
+
+                                <option value="">
+                                    Semua kategori
+                                </option>
+
+                                {% for c in categories %}
+
+                                <option value="{{ c.id }}">
+                                    {{ c.name }}
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                            <i class="fa-solid fa-chevron-down
+                                       absolute
+                                       right-3
+                                       top-1/2
+                                       -translate-y-1/2
+                                       pointer-events-none
+                                       text-slate-400
+                                       text-xs">
+                            </i>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- MIN PRICE -->
+
+                    <div>
+
+                        <label for="minPrice" class="block text-xs font-bold text-slate-500 mb-1.5">
+
+                            Harga Minimum
+
+                        </label>
+
+                        <div class="relative">
+
+                            <span class="absolute
+                                       left-3.5
+                                       top-1/2
+                                       -translate-y-1/2
+                                       text-xs
+                                       font-bold
+                                       text-slate-400">
+
+                                Rp
+
+                            </span>
+
+                            <input type="number" id="minPrice" min="0" placeholder="0" class="w-full
+                                       bg-white
+                                       border border-slate-200
+                                       rounded-xl
+                                       pl-10
+                                       pr-3
+                                       py-2.5
+                                       text-sm
+                                       font-semibold
+                                       text-slate-700
+                                       outline-none
+                                       focus:ring-2
+                                       focus:ring-teal-500
+                                       focus:border-teal-500
+                                       transition">
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- MAX PRICE -->
+
+                    <div>
+
+                        <label for="maxPrice" class="block text-xs font-bold text-slate-500 mb-1.5">
+
+                            Harga Maksimum
+
+                        </label>
+
+                        <div class="relative">
+
+                            <span class="absolute
+                                       left-3.5
+                                       top-1/2
+                                       -translate-y-1/2
+                                       text-xs
+                                       font-bold
+                                       text-slate-400">
+
+                                Rp
+
+                            </span>
+
+                            <input type="number" id="maxPrice" min="0" placeholder="Tidak dibatasi" class="w-full
+                                       bg-white
+                                       border border-slate-200
+                                       rounded-xl
+                                       pl-10
+                                       pr-3
+                                       py-2.5
+                                       text-sm
+                                       font-semibold
+                                       text-slate-700
+                                       outline-none
+                                       focus:ring-2
+                                       focus:ring-teal-500
+                                       focus:border-teal-500
+                                       transition">
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- RATING -->
+
+                    <div>
+
+                        <label for="ratingFilter" class="block text-xs font-bold text-slate-500 mb-1.5">
+
+                            Rating Minimum
+
+                        </label>
+
+                        <div class="relative">
+
+                            <select id="ratingFilter" class="w-full
+                                       appearance-none
+                                       bg-white
+                                       border border-slate-200
+                                       rounded-xl
+                                       px-3.5
+                                       py-2.5
+                                       pr-9
+                                       text-sm
+                                       font-semibold
+                                       text-slate-700
+                                       outline-none
+                                       focus:ring-2
+                                       focus:ring-teal-500
+                                       focus:border-teal-500
+                                       transition">
+
+                                <option value="">
+                                    Semua rating
+                                </option>
+
+                                <option value="4">
+                                    ★ 4 ke atas
+                                </option>
+
+                                <option value="3">
+                                    ★ 3 ke atas
+                                </option>
+
+                                <option value="2">
+                                    ★ 2 ke atas
+                                </option>
+
+                                <option value="1">
+                                    ★ 1 ke atas
+                                </option>
+
+                            </select>
+
+                            <i class="fa-solid fa-chevron-down
+                                       absolute
+                                       right-3
+                                       top-1/2
+                                       -translate-y-1/2
+                                       pointer-events-none
+                                       text-slate-400
+                                       text-xs">
+                            </i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SECOND ROW -->
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+
+                    <!-- STOCK -->
+
+                    <div>
+
+                        <label for="stockFilter" class="block text-xs font-bold text-slate-500 mb-1.5">
+
+                            Ketersediaan
+
+                        </label>
+
+                        <div class="relative">
+
+                            <select id="stockFilter" class="w-full
+                                       appearance-none
+                                       bg-white
+                                       border border-slate-200
+                                       rounded-xl
+                                       px-3.5
+                                       py-2.5
+                                       pr-9
+                                       text-sm
+                                       font-semibold
+                                       text-slate-700
+                                       outline-none
+                                       focus:ring-2
+                                       focus:ring-teal-500
+                                       focus:border-teal-500
+                                       transition">
+
+                                <option value="">
+                                    Semua produk
+                                </option>
+
+                                <option value="available">
+                                    Stok tersedia
+                                </option>
+
+                                <option value="empty">
+                                    Stok habis
+                                </option>
+
+                            </select>
+
+                            <i class="fa-solid fa-chevron-down
+                                       absolute
+                                       right-3
+                                       top-1/2
+                                       -translate-y-1/2
+                                       pointer-events-none
+                                       text-slate-400
+                                       text-xs">
+                            </i>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SORT -->
+
+                    <div>
+
+                        <label for="sortFilter" class="block text-xs font-bold text-slate-500 mb-1.5">
+
+                            Urutkan
+
+                        </label>
+
+                        <div class="relative">
+
+                            <select id="sortFilter" class="w-full
+                                       appearance-none
+                                       bg-white
+                                       border border-slate-200
+                                       rounded-xl
+                                       px-3.5
+                                       py-2.5
+                                       pr-9
+                                       text-sm
+                                       font-semibold
+                                       text-slate-700
+                                       outline-none
+                                       focus:ring-2
+                                       focus:ring-teal-500
+                                       focus:border-teal-500
+                                       transition">
+
+                                <option value="default">
+                                    Terbaru
+                                </option>
+
+                                <option value="price_low">
+                                    Harga terendah
+                                </option>
+
+                                <option value="price_high">
+                                    Harga tertinggi
+                                </option>
+
+                                <option value="rating_high">
+                                    Rating tertinggi
+                                </option>
+
+                                <option value="name">
+                                    Nama A-Z
+                                </option>
+
+                            </select>
+
+                            <i class="fa-solid fa-chevron-down
+                                       absolute
+                                       right-3
+                                       top-1/2
+                                       -translate-y-1/2
+                                       pointer-events-none
+                                       text-slate-400
+                                       text-xs">
+                            </i>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- RESET -->
+
+                    <div class="flex items-end">
+
+                        <button type="button" id="resetFilter" class="w-full
+                                   inline-flex
+                                   items-center
+                                   justify-center
+                                   gap-2
+                                   bg-slate-100
+                                   hover:bg-slate-200
+                                   text-slate-600
+                                   rounded-xl
+                                   px-4
+                                   py-2.5
+                                   text-sm
+                                   font-bold
+                                   transition">
+
+                            <i class="fa-solid fa-rotate-left"></i>
+
+                            Reset Filter
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ACTIVE FILTER -->
+
+                <div class="mt-3
+                           bg-slate-50
+                           border border-slate-100
+                           rounded-xl
+                           px-3.5
+                           py-2.5">
+
+                    <div class="flex items-center gap-2">
+
+                        <i class="fa-solid fa-circle-info
+                                   text-teal-600
+                                   text-xs">
+                        </i>
+
+                        <p id="activeFilterText" class="text-xs
+                                   font-semibold
+                                   text-slate-500">
+
+                            Menampilkan semua produk
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- PRODUCT LIST HEADER -->
+    <!-- ========================================================= -->
+
+    <div class="flex items-center justify-between px-1">
+
+        <div class="flex items-center gap-2">
+
+            <div class="w-8 h-8
+                       rounded-lg
+                       bg-teal-50
+                       text-teal-700
+                       flex
+                       items-center
+                       justify-center">
+
+                <i class="fa-solid fa-store text-sm"></i>
+
+            </div>
+
+            <div>
+
+                <p class="text-sm font-bold text-slate-800">
+                    Produk Pasar Remboken
+                </p>
+
+                <p class="text-[11px] text-slate-400">
+                    Pilih produk yang ingin Anda beli.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- PRODUCT SCROLL AREA -->
+    <!-- ========================================================= -->
+    <section>
+        <div id="productScrollArea" class="max-h-[calc(100vh-270px)]
+               min-h-[300px]
+               overflow-y-auto
+               overflow-x-hidden
+               pr-1
+               pb-2
+               overscroll-contain
+               scroll-smooth">
+
+            <div id="products" class="grid
+                   grid-cols-2
+                   sm:grid-cols-3
+                   md:grid-cols-4
+                   lg:grid-cols-5
+                   xl:grid-cols-6
+                   gap-3">
+
+
+                {% for p in products %}
+
+                <div data-cat="{{ p.category_id or '' }}" data-name="{{ p.name|lower }}"
+                    data-store="{{ (p.seller.seller_profile.store_name if p.seller.seller_profile else p.seller.name)|lower }}"
+                    data-price="{{ p.price }}" data-stock="{{ p.stock }}"
+                    data-rating="{{ p.product_rating|default(0, true) }}" data-index="{{ loop.index }}" class="product-card
+                       group
+                       bg-white
+                       border border-slate-200
+                       rounded-xl
+                       overflow-hidden
+                       transition
+                       duration-200
+                       hover:-translate-y-0.5
+                       hover:shadow-lg
+                       hover:border-slate-300">
+
+
+                    <!-- IMAGE -->
+
+                    <a href="{{ url_for('product_detail', pid=p.id) }}"
+                        class="block relative overflow-hidden bg-slate-100">
+
+                        {% if p.image %}
+
+                        <img src="{{ url_for('static', filename='uploads/products/' + p.image) }}" alt="{{ p.name }}"
+                            class="w-full
+                               h-32
+                               sm:h-36
+                               md:h-40
+                               object-cover
+                               transition
+                               duration-300
+                               group-hover:scale-105">
+
+                        {% else %}
+
+                        <div class="w-full
+                               h-32
+                               sm:h-36
+                               md:h-40
+                               bg-slate-100
+                               flex
+                               items-center
+                               justify-center
+                               text-slate-300
+                               text-3xl">
+
+                            <i class="fa-solid fa-image"></i>
+
+                        </div>
+
+                        {% endif %}
+
+
+                        <!-- CATEGORY -->
+
+                        <div class="absolute top-2 left-2 max-w-[80%]">
+
+                            <span class="inline-flex
+                                   items-center
+                                   gap-1
+                                   px-2
+                                   py-1
+                                   rounded-md
+                                   bg-white/95
+                                   backdrop-blur-sm
+                                   shadow-sm
+                                   text-[9px]
+                                   font-bold
+                                   text-slate-600">
+
+                                <i class="fa-solid fa-tag text-teal-600"></i>
+
+                                {{ p.category.name if p.category else 'Umum' }}
+
+                            </span>
+
+                        </div>
+
+                    </a>
+
+
+                    <!-- CONTENT -->
+
+                    <div class="p-3">
+
+
+                        <!-- NAME -->
+
+                        <a href="{{ url_for('product_detail', pid=p.id) }}" class="block">
+
+                            <h3 class="font-black
+                                   text-xs
+                                   sm:text-sm
+                                   text-slate-900
+                                   line-clamp-2
+                                   leading-snug
+                                   hover:text-teal-700
+                                   transition">
+
+                                {{ p.name }}
+
+                            </h3>
+
+                        </a>
+
+
+                        <!-- PRICE -->
+
+                        <p class="text-sm
+                               sm:text-base
+                               text-teal-700
+                               font-black
+                               mt-1.5">
+
+                            {{ rupiah(p.price) }}
+
+                        </p>
+
+
+                        <!-- ================================================= -->
+                        <!-- RATING + TERJUAL -->
+                        <!-- ================================================= -->
+
+                        <div class="flex items-center gap-2 mt-1.5">
+
+                            <!-- RATING -->
+
+                            <div class="flex items-center gap-1">
+
+                                <span class="text-amber-400 text-[11px]">
+                                    ★
+                                </span>
+
+                                <span class="text-[11px] font-bold text-slate-700">
+
+                                    {{ '%.1f'|format(p.product_rating|default(0, true)) }}
+
+                                </span>
+
+                                <span class="text-[10px] text-slate-400">
+                                    rating
+                                </span>
+
+                            </div>
+
+
+                            <span class="text-slate-300 text-[10px]">
+                                •
+                            </span>
+
+
+                            <!-- JUMLAH TERJUAL -->
+
+                            <span class="text-[10px] text-slate-500">
+
+                                <span class="font-bold text-slate-700">
+
+                                    {{ p.sold_count|default(0, true) }}
+
+                                </span>
+
+                                terjual
+
+                            </span>
+
+                        </div>
+
+
+                        <!-- STORE -->
+
+                        <div class="flex
+                               items-center
+                               gap-1
+                               mt-1.5
+                               min-w-0">
+
+                            <i class="fa-solid fa-store
+                                   text-[9px]
+                                   text-slate-400
+                                   shrink-0">
+                            </i>
+
+                            <p class="text-[10px]
+                                   text-slate-500
+                                   truncate">
+
+                                {{ p.seller.seller_profile.store_name
+                                if p.seller.seller_profile
+                                else p.seller.name }}
+
+                            </p>
+
+                        </div>
+
+
+                        <!-- STOCK -->
+
+                        <div class="flex
+                               items-center
+                               justify-between
+                               gap-1
+                               mt-1.5">
+
+                            <span class="inline-flex
+                                   items-center
+                                   gap-1
+                                   text-[10px]
+                                   {% if p.stock > 0 %}
+                                   text-slate-500
+                                   {% else %}
+                                   text-red-500
+                                   {% endif %}">
+
+                                {% if p.stock > 0 %}
+
+                                <i class="fa-solid fa-box"></i>
+
+                                {{ p.stock }}
+
+                                {% else %}
+
+                                <i class="fa-solid fa-circle-xmark"></i>
+
+                                Habis
+
+                                {% endif %}
+
+                            </span>
+
+
+                            <a href="{{ url_for('product_detail', pid=p.id) }}" class="text-[10px]
+                                   font-bold
+                                   text-teal-700
+                                   hover:text-teal-800">
+
+                                Detail
+
+                                <i class="fa-solid fa-arrow-right ml-0.5"></i>
+
+                            </a>
+
+                        </div>
+
+
+                        <!-- CART -->
+
+                        {% if current_user.is_authenticated
+                        and current_user.role == 'buyer' %}
+
+                        {% if p.stock > 0 %}
+
+                        <form method="post" action="{{ url_for('cart_add', pid=p.id) }}" class="mt-2.5">
+
+                            <div class="flex gap-1.5">
+
+                                <input type="number" min="1" max="{{ p.stock }}" value="1" name="qty"
+                                    aria-label="Jumlah {{ p.name }}" class="w-12
+                                           sm:w-14
+                                           border
+                                           border-slate-200
+                                           rounded-lg
+                                           px-1
+                                           py-2
+                                           text-xs
+                                           font-bold
+                                           text-center
+                                           outline-none
+                                           focus:ring-2
+                                           focus:ring-teal-500
+                                           focus:border-teal-500">
+
+
+                                <button type="submit" class="flex-1
+                                           inline-flex
+                                           items-center
+                                           justify-center
+                                           gap-1
+                                           bg-teal-700
+                                           hover:bg-teal-800
+                                           text-white
+                                           rounded-lg
+                                           px-2
+                                           py-2
+                                           text-[10px]
+                                           sm:text-xs
+                                           font-bold
+                                           transition">
+
+                                    <i class="fa-solid fa-cart-plus"></i>
+
+                                    <span>
+                                        Tambah
+                                    </span>
+
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                        {% else %}
+
+                        <button type="button" disabled class="w-full
+                                   mt-2.5
+                                   bg-slate-100
+                                   text-slate-400
+                                   rounded-lg
+                                   p-2
+                                   text-[10px]
+                                   sm:text-xs
+                                   font-bold
+                                   cursor-not-allowed">
+
+                            Stok Habis
+
+                        </button>
+
+                        {% endif %}
+
+                        {% endif %}
+
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+
+                <!-- ===================================================== -->
+                <!-- EMPTY -->
+                <!-- ===================================================== -->
+
+                <div id="emptyProducts" class="hidden
+                       col-span-full
+                       bg-white
+                       border border-slate-200
+                       rounded-2xl
+                       p-10
+                       text-center">
+
+                    <div class="w-14 h-14
+                           mx-auto
+                           rounded-xl
+                           bg-slate-100
+                           text-slate-400
+                           flex
+                           items-center
+                           justify-center
+                           mb-3">
+
+                        <i class="fa-solid fa-box-open text-xl"></i>
+
+                    </div>
+
+                    <h3 class="font-black text-base text-slate-800">
+                        Produk tidak ditemukan
+                    </h3>
+
+                    <p class="text-xs text-slate-500 mt-1">
+                        Coba ubah kata pencarian atau filter Anda.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const searchInput =
+            document.getElementById('productSearch');
+
+        const clearSearch =
+            document.getElementById('clearSearch');
+
+        const filterToggle =
+            document.getElementById('filterToggle');
+
+        const filterPanel =
+            document.getElementById('filterPanel');
+
+        const filterChevron =
+            document.getElementById('filterChevron');
+
+        const categorySelect =
+            document.getElementById('cat');
+
+        const minPriceInput =
+            document.getElementById('minPrice');
+
+        const maxPriceInput =
+            document.getElementById('maxPrice');
+
+        const ratingFilter =
+            document.getElementById('ratingFilter');
+
+        const stockFilter =
+            document.getElementById('stockFilter');
+
+        const sortFilter =
+            document.getElementById('sortFilter');
+
+        const resetFilter =
+            document.getElementById('resetFilter');
+
+        const productContainer =
+            document.getElementById('products');
+
+        const productCount =
+            document.getElementById('productCount');
+
+        const emptyProducts =
+            document.getElementById('emptyProducts');
+
+        const activeFilterText =
+            document.getElementById('activeFilterText');
+
+
+        if (!productContainer) {
+            return;
+        }
+
+
+        /* =========================================================
+           FILTER TOGGLE
+        ========================================================= */
+
+        if (filterToggle && filterPanel) {
+
+            filterToggle.addEventListener(
+                'click',
+                function () {
+
+                    const isHidden =
+                        filterPanel.classList.contains('hidden');
+
+
+                    if (isHidden) {
+
+                        filterPanel.classList.remove('hidden');
+
+                        filterToggle.setAttribute(
+                            'aria-expanded',
+                            'true'
+                        );
+
+                        if (filterChevron) {
+
+                            filterChevron.classList.add(
+                                'rotate-180'
+                            );
+
+                        }
+
+                    } else {
+
+                        filterPanel.classList.add('hidden');
+
+                        filterToggle.setAttribute(
+                            'aria-expanded',
+                            'false'
+                        );
+
+                        if (filterChevron) {
+
+                            filterChevron.classList.remove(
+                                'rotate-180'
+                            );
+
+                        }
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =========================================================
+           GET CARDS
+        ========================================================= */
+
+        function getCards() {
+
+            return Array.from(
+                productContainer.querySelectorAll(
+                    '.product-card'
+                )
+            );
+
+        }
+
+
+        /* =========================================================
+           FILTER
+        ========================================================= */
+
+        function filterProducts() {
+
+            const search =
+                (searchInput?.value || '')
+                    .trim()
+                    .toLowerCase();
+
+
+            const category =
+                categorySelect?.value || '';
+
+
+            const minPrice =
+                parseFloat(
+                    minPriceInput?.value || ''
+                );
+
+
+            const maxPrice =
+                parseFloat(
+                    maxPriceInput?.value || ''
+                );
+
+
+            const minimumRating =
+                parseFloat(
+                    ratingFilter?.value || ''
+                );
+
+
+            const stockStatus =
+                stockFilter?.value || '';
+
+
+            const cards =
+                getCards();
+
+
+            let visibleCards = [];
+
+
+            cards.forEach(function (card) {
+
+                const name =
+                    card.dataset.name || '';
+
+
+                const store =
+                    card.dataset.store || '';
+
+
+                const cardCategory =
+                    card.dataset.cat || '';
+
+
+                const price =
+                    parseFloat(
+                        card.dataset.price || '0'
+                    );
+
+
+                const stock =
+                    parseInt(
+                        card.dataset.stock || '0',
+                        10
+                    );
+
+
+                const rating =
+                    parseFloat(
+                        card.dataset.rating || '0'
+                    );
+
+
+                const matchSearch =
+                    !search ||
+                    name.includes(search) ||
+                    store.includes(search);
+
+
+                const matchCategory =
+                    !category ||
+                    cardCategory === category;
+
+
+                const matchMinPrice =
+                    Number.isNaN(minPrice) ||
+                    price >= minPrice;
+
+
+                const matchMaxPrice =
+                    Number.isNaN(maxPrice) ||
+                    price <= maxPrice;
+
+
+                const matchRating =
+                    Number.isNaN(minimumRating) ||
+                    rating >= minimumRating;
+
+
+                let matchStock = true;
+
+
+                if (stockStatus === 'available') {
+
+                    matchStock =
+                        stock > 0;
+
+                } else if (stockStatus === 'empty') {
+
+                    matchStock =
+                        stock <= 0;
+
+                }
+
+
+                const show =
+                    matchSearch &&
+                    matchCategory &&
+                    matchMinPrice &&
+                    matchMaxPrice &&
+                    matchRating &&
+                    matchStock;
+
+
+                if (show) {
+
+                    card.style.display = '';
+
+                    visibleCards.push(card);
+
+                } else {
+
+                    card.style.display = 'none';
+
+                }
+
+            });
+
+
+            sortProducts(
+                visibleCards
+            );
+
+
+            if (productCount) {
+
+                productCount.textContent =
+                    visibleCards.length +
+                    ' produk';
+
+            }
+
+
+            if (emptyProducts) {
+
+                if (visibleCards.length === 0) {
+
+                    emptyProducts.classList.remove(
+                        'hidden'
+                    );
+
+                } else {
+
+                    emptyProducts.classList.add(
+                        'hidden'
+                    );
+
+                }
+
+            }
+
+
+            updateFilterInfo(
+                search,
+                category,
+                minPrice,
+                maxPrice,
+                minimumRating,
+                stockStatus
+            );
+
+
+            if (clearSearch) {
+
+                if (search) {
+
+                    clearSearch.classList.remove(
+                        'hidden'
+                    );
+
+                } else {
+
+                    clearSearch.classList.add(
+                        'hidden'
+                    );
+
+                }
+
+            }
+
+        }
+
+
+        /* =========================================================
+           SORT
+        ========================================================= */
+
+        function sortProducts(cards) {
+
+            const sort =
+                sortFilter?.value || 'default';
+
+
+            cards.sort(function (a, b) {
+
+                const priceA =
+                    parseFloat(
+                        a.dataset.price || '0'
+                    );
+
+
+                const priceB =
+                    parseFloat(
+                        b.dataset.price || '0'
+                    );
+
+
+                const ratingA =
+                    parseFloat(
+                        a.dataset.rating || '0'
+                    );
+
+
+                const ratingB =
+                    parseFloat(
+                        b.dataset.rating || '0'
+                    );
+
+
+                const nameA =
+                    a.dataset.name || '';
+
+
+                const nameB =
+                    b.dataset.name || '';
+
+
+                if (sort === 'price_low') {
+
+                    return priceA - priceB;
+
+                }
+
+
+                if (sort === 'price_high') {
+
+                    return priceB - priceA;
+
+                }
+
+
+                if (sort === 'rating_high') {
+
+                    return ratingB - ratingA;
+
+                }
+
+
+                if (sort === 'name') {
+
+                    return nameA.localeCompare(
+                        nameB,
+                        'id'
+                    );
+
+                }
+
+
+                const indexA =
+                    parseInt(
+                        a.dataset.index || '0',
+                        10
+                    );
+
+
+                const indexB =
+                    parseInt(
+                        b.dataset.index || '0',
+                        10
+                    );
+
+
+                return indexA - indexB;
+
+            });
+
+
+            cards.forEach(function (card) {
+
+                productContainer.appendChild(
+                    card
+                );
+
+            });
+
+
+            if (emptyProducts) {
+
+                productContainer.appendChild(
+                    emptyProducts
+                );
+
+            }
+
+        }
+
+
+        /* =========================================================
+           ACTIVE FILTER INFO
+        ========================================================= */
+
+        function updateFilterInfo(
+            search,
+            category,
+            minPrice,
+            maxPrice,
+            minimumRating,
+            stockStatus
+        ) {
+
+            if (!activeFilterText) {
+                return;
+            }
+
+
+            const filters = [];
+
+
+            if (search) {
+
+                filters.push(
+                    'Pencarian: "' +
+                    search +
+                    '"'
+                );
+
+            }
+
+
+            if (category) {
+
+                const option =
+                    categorySelect?.querySelector(
+                        'option[value="' +
+                        category +
+                        '"]'
+                    );
+
+
+                if (option) {
+
+                    filters.push(
+                        'Kategori: ' +
+                        option.textContent.trim()
+                    );
+
+                }
+
+            }
+
+
+            if (!Number.isNaN(minPrice)) {
+
+                filters.push(
+                    'Min Rp ' +
+                    minPrice.toLocaleString(
+                        'id-ID'
+                    )
+                );
+
+            }
+
+
+            if (!Number.isNaN(maxPrice)) {
+
+                filters.push(
+                    'Max Rp ' +
+                    maxPrice.toLocaleString(
+                        'id-ID'
+                    )
+                );
+
+            }
+
+
+            if (!Number.isNaN(minimumRating)) {
+
+                filters.push(
+                    'Rating ≥ ' +
+                    minimumRating +
+                    '★'
+                );
+
+            }
+
+
+            if (stockStatus === 'available') {
+
+                filters.push(
+                    'Stok tersedia'
+                );
+
+            }
+
+
+            if (stockStatus === 'empty') {
+
+                filters.push(
+                    'Stok habis'
+                );
+
+            }
+
+
+            if (filters.length === 0) {
+
+                activeFilterText.textContent =
+                    'Menampilkan semua produk';
+
+            } else {
+
+                activeFilterText.textContent =
+                    filters.join(' • ');
+
+            }
+
+        }
+
+
+        /* =========================================================
+           RESET
+        ========================================================= */
+
+        function resetFilters() {
+
+            if (searchInput) {
+                searchInput.value = '';
+            }
+
+
+            if (categorySelect) {
+                categorySelect.value = '';
+            }
+
+
+            if (minPriceInput) {
+                minPriceInput.value = '';
+            }
+
+
+            if (maxPriceInput) {
+                maxPriceInput.value = '';
+            }
+
+
+            if (ratingFilter) {
+                ratingFilter.value = '';
+            }
+
+
+            if (stockFilter) {
+                stockFilter.value = '';
+            }
+
+
+            if (sortFilter) {
+                sortFilter.value = 'default';
+            }
+
+
+            filterProducts();
+
+        }
+
+
+        /* =========================================================
+           EVENTS
+        ========================================================= */
+
+        if (searchInput) {
+
+            searchInput.addEventListener(
+                'input',
+                filterProducts
+            );
+
+        }
+
+
+        if (clearSearch) {
+
+            clearSearch.addEventListener(
+                'click',
+                function () {
+
+                    if (searchInput) {
+
+                        searchInput.value = '';
+
+                        searchInput.focus();
+
+                    }
+
+                    filterProducts();
+
+                }
+            );
+
+        }
+
+
+        if (categorySelect) {
+
+            categorySelect.addEventListener(
+                'change',
+                filterProducts
+            );
+
+        }
+
+
+        if (minPriceInput) {
+
+            minPriceInput.addEventListener(
+                'input',
+                filterProducts
+            );
+
+        }
+
+
+        if (maxPriceInput) {
+
+            maxPriceInput.addEventListener(
+                'input',
+                filterProducts
+            );
+
+        }
+
+
+        if (ratingFilter) {
+
+            ratingFilter.addEventListener(
+                'change',
+                filterProducts
+            );
+
+        }
+
+
+        if (stockFilter) {
+
+            stockFilter.addEventListener(
+                'change',
+                filterProducts
+            );
+
+        }
+
+
+        if (sortFilter) {
+
+            sortFilter.addEventListener(
+                'change',
+                filterProducts
+            );
+
+        }
+
+
+        if (resetFilter) {
+
+            resetFilter.addEventListener(
+                'click',
+                resetFilters
+            );
+
+        }
+
+
+        /* =========================================================
+           INITIAL
+        ========================================================= */
+
+        filterProducts();
+
+    });
+
+</script>
+
+
+<style>
+    /* =========================================================
+       PRODUCT SCROLLBAR
+    ========================================================= */
+
+    #productScrollArea::-webkit-scrollbar {
+        width: 6px;
+    }
+
+
+    #productScrollArea::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+
+    #productScrollArea::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 999px;
+    }
+
+
+    #productScrollArea::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+
+    /* =========================================================
+       FIREFOX
+    ========================================================= */
+
+    #productScrollArea {
+
+        scrollbar-width: thin;
+
+        scrollbar-color:
+            #cbd5e1 transparent;
+
+    }
+</style>
+
+{% endblock %}

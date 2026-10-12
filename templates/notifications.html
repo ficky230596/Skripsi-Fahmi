@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block content %}<h2>Notifikasi</h2>{% for n in notifications %}<div
+    class="alert alert-{{'warning' if n.kind=='warning' else ('danger' if n.kind=='danger' else 'info')}}">
+    <b>{{n.title}}</b><br>{{n.message}}<small class="d-block">{{n.created_at}}</small></div>{% else %}<p>Tidak ada
+    notifikasi.</p>{% endfor %}{% endblock %}

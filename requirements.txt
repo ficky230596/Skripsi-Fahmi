@@ -1,0 +1,10 @@
+Flask==3.1.2
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+python-dotenv==1.1.1
+PyMySQL==1.1.2
+requests==2.32.5
+midtransclient==1.4.2
+openpyxl==3.1.5
+reportlab==4.4.4
+Werkzeug==3.1.3

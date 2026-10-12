@@ -1,0 +1,543 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="max-w-4xl mx-auto space-y-5">
+
+<!-- ========================================================= -->
+<!-- HEADER -->
+<!-- ========================================================= -->
+
+<div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+        <div>
+
+            <div class="flex items-center gap-2 mb-2">
+
+                <span class="w-2 h-2 rounded-full bg-teal-500"></span>
+
+                <span class="text-xs font-black uppercase tracking-wider text-slate-400">
+                    Admin
+                </span>
+
+            </div>
+
+            <h1 class="text-2xl sm:text-3xl font-black text-slate-900">
+                Verifikasi Pedagang
+            </h1>
+
+            <p class="text-sm text-slate-500 mt-1">
+                Periksa informasi pedagang sebelum menyetujui pendaftaran.
+            </p>
+
+        </div>
+
+        <div class="flex items-center gap-2
+                    px-3 py-2
+                    bg-amber-50
+                    border border-amber-100
+                    rounded-xl
+                    text-amber-700">
+
+            <i class="fa-solid fa-user-check text-sm"></i>
+
+            <span class="text-xs font-bold">
+                Pemeriksaan Pedagang
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- SELLER IDENTITY -->
+<!-- ========================================================= -->
+
+<div class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+
+    <div class="px-5 sm:px-6 py-4 border-b border-slate-100">
+
+        <div class="flex items-center gap-3">
+
+            <div class="w-10 h-10
+                        rounded-xl
+                        bg-teal-50
+                        text-teal-700
+                        flex
+                        items-center
+                        justify-center">
+
+                <i class="fa-solid fa-user"></i>
+
+            </div>
+
+            <div>
+
+                <h2 class="font-black text-slate-900">
+                    Informasi Pedagang
+                </h2>
+
+                <p class="text-xs text-slate-400">
+                    Data akun dan identitas pedagang.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="p-5 sm:p-6">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            <!-- NAME -->
+
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+
+                <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1">
+                    Nama
+                </p>
+
+                <p class="font-bold text-slate-800">
+                    {{ seller.name }}
+                </p>
+
+            </div>
+
+
+            <!-- EMAIL -->
+
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+
+                <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1">
+                    Email
+                </p>
+
+                <p class="font-bold text-slate-800 break-all">
+                    {{ seller.email }}
+                </p>
+
+            </div>
+
+
+            <!-- PHONE -->
+
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+
+                <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1">
+                    Telepon
+                </p>
+
+                <p class="font-bold text-slate-800">
+                    {{ seller.phone or '-' }}
+                </p>
+
+            </div>
+
+
+            <!-- NIK -->
+
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+
+                <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1">
+                    NIK
+                </p>
+
+                <p class="font-bold text-slate-800 tracking-wide">
+                    {{ profile.nik }}
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- STORE INFORMATION -->
+<!-- ========================================================= -->
+
+<div class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+
+    <div class="px-5 sm:px-6 py-4 border-b border-slate-100">
+
+        <div class="flex items-center gap-3">
+
+            <div class="w-10 h-10
+                        rounded-xl
+                        bg-blue-50
+                        text-blue-700
+                        flex
+                        items-center
+                        justify-center">
+
+                <i class="fa-solid fa-store"></i>
+
+            </div>
+
+            <div>
+
+                <h2 class="font-black text-slate-900">
+                    Informasi Toko
+                </h2>
+
+                <p class="text-xs text-slate-400">
+                    Informasi toko dan alamat pedagang.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="p-5 sm:p-6 space-y-4">
+
+        <!-- STORE NAME -->
+
+        <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+
+            <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1">
+                Nama Toko
+            </p>
+
+            <p class="font-bold text-slate-800">
+                {{ profile.store_name }}
+            </p>
+
+        </div>
+
+
+        <!-- SELLER ADDRESS -->
+
+        <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+
+            <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1">
+                Alamat Pedagang
+            </p>
+
+            <p class="text-sm text-slate-700 leading-relaxed">
+                {{ profile.address }}
+            </p>
+
+        </div>
+
+
+        <!-- STORE ADDRESS -->
+
+        <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+
+            <p class="text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1">
+                Alamat Toko
+            </p>
+
+            <p class="text-sm text-slate-700 leading-relaxed">
+                {{ profile.store_address }}
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- KTP -->
+<!-- ========================================================= -->
+
+<div class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+
+    <div class="px-5 sm:px-6 py-4 border-b border-slate-100">
+
+        <div class="flex items-center gap-3">
+
+            <div class="w-10 h-10
+                        rounded-xl
+                        bg-purple-50
+                        text-purple-700
+                        flex
+                        items-center
+                        justify-center">
+
+                <i class="fa-solid fa-id-card"></i>
+
+            </div>
+
+            <div>
+
+                <h2 class="font-black text-slate-900">
+                    Dokumen Identitas
+                </h2>
+
+                <p class="text-xs text-slate-400">
+                    Periksa dokumen KTP yang dikirim pedagang.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="p-5 sm:p-6">
+
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4
+                    bg-slate-50
+                    border border-slate-100
+                    rounded-xl
+                    p-4">
+
+            <div class="flex items-center gap-3">
+
+                <div class="w-10 h-10
+                            rounded-lg
+                            bg-white
+                            border border-slate-200
+                            text-slate-600
+                            flex
+                            items-center
+                            justify-center">
+
+                    <i class="fa-solid fa-file-image"></i>
+
+                </div>
+
+                <div>
+
+                    <p class="font-bold text-sm text-slate-800">
+                        Dokumen KTP Pedagang
+                    </p>
+
+                    <p class="text-xs text-slate-400">
+                        Buka dokumen untuk melakukan pemeriksaan.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <a target="_blank"
+               href="{{ url_for('admin_ktp', uid=seller.id) }}"
+               class="inline-flex
+                      items-center
+                      justify-center
+                      gap-2
+                      bg-slate-900
+                      hover:bg-slate-800
+                      text-white
+                      rounded-xl
+                      px-4
+                      py-2.5
+                      text-sm
+                      font-bold
+                      transition">
+
+                <i class="fa-solid fa-id-card"></i>
+
+                Lihat KTP
+
+                <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- VERIFICATION -->
+<!-- ========================================================= -->
+
+<div class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+
+    <div class="px-5 sm:px-6 py-4 border-b border-slate-100">
+
+        <div class="flex items-center gap-3">
+
+            <div class="w-10 h-10
+                        rounded-xl
+                        bg-teal-50
+                        text-teal-700
+                        flex
+                        items-center
+                        justify-center">
+
+                <i class="fa-solid fa-shield-halved"></i>
+
+            </div>
+
+            <div>
+
+                <h2 class="font-black text-slate-900">
+                    Keputusan Verifikasi
+                </h2>
+
+                <p class="text-xs text-slate-400">
+                    Tentukan status verifikasi pedagang.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="p-5 sm:p-6">
+
+        <form method="post"
+              class="space-y-4">
+
+            <!-- STATUS -->
+
+            <div>
+
+                <label for="status"
+                       class="block text-xs font-bold text-slate-500 mb-2">
+
+                    Status Verifikasi
+
+                </label>
+
+                <div class="relative">
+
+                    <select id="status"
+                            name="status"
+                            class="w-full
+                                   appearance-none
+                                   bg-white
+                                   border border-slate-200
+                                   rounded-xl
+                                   px-4
+                                   py-3
+                                   pr-10
+                                   text-sm
+                                   font-semibold
+                                   text-slate-700
+                                   outline-none
+                                   focus:ring-2
+                                   focus:ring-teal-500
+                                   focus:border-teal-500
+                                   transition">
+
+                        <option value="approved">
+                            approved
+                        </option>
+
+                        <option value="rejected">
+                            rejected
+                        </option>
+
+                        <option value="pending">
+                            pending
+                        </option>
+
+                    </select>
+
+                    <i class="fa-solid fa-chevron-down
+                              absolute
+                              right-4
+                              top-1/2
+                              -translate-y-1/2
+                              pointer-events-none
+                              text-slate-400
+                              text-xs">
+                    </i>
+
+                </div>
+
+            </div>
+
+
+            <!-- REASON -->
+
+            <div>
+
+                <label for="reason"
+                       class="block text-xs font-bold text-slate-500 mb-2">
+
+                    Catatan Verifikasi
+
+                </label>
+
+                <textarea id="reason"
+                          name="reason"
+                          rows="4"
+                          placeholder="Isi catatan jika pengajuan ditolak atau membutuhkan perbaikan..."
+                          class="w-full
+                                 border border-slate-200
+                                 rounded-xl
+                                 px-4
+                                 py-3
+                                 text-sm
+                                 text-slate-700
+                                 placeholder:text-slate-400
+                                 outline-none
+                                 resize-none
+                                 focus:ring-2
+                                 focus:ring-teal-500
+                                 focus:border-teal-500
+                                 transition"></textarea>
+
+                <p class="text-[11px] text-slate-400 mt-1.5">
+                    Catatan dapat digunakan sebagai informasi kepada pedagang.
+                </p>
+
+            </div>
+
+
+            <!-- SUBMIT -->
+
+            <div class="pt-2">
+
+                <button type="submit"
+                        class="w-full
+                               inline-flex
+                               items-center
+                               justify-center
+                               gap-2
+                               bg-teal-700
+                               hover:bg-teal-800
+                               active:bg-teal-900
+                               text-white
+                               rounded-xl
+                               px-4
+                               py-3
+                               font-bold
+                               text-sm
+                               transition">
+
+                    <i class="fa-solid fa-check"></i>
+
+                    Simpan Verifikasi
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</div>
+
+{% endblock %}

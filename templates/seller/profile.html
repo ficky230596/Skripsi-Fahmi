@@ -1,0 +1,1414 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="max-w-5xl mx-auto pb-8">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="mb-5">
+
+        <div class="flex flex-col sm:flex-row
+                    sm:items-center sm:justify-between gap-3">
+
+            <div>
+
+                <div class="flex items-center gap-2">
+
+                    <div class="w-9 h-9 rounded-xl
+                               bg-teal-100 text-teal-700
+                               flex items-center justify-center">
+
+                        <i class="fa-solid fa-user-gear"></i>
+
+                    </div>
+
+                    <h1 class="text-2xl font-black text-slate-800">
+                        Profil Pedagang
+                    </h1>
+
+                </div>
+
+                <p class="text-sm text-slate-500 mt-1">
+                    Kelola informasi akun dan data pedagang Anda.
+                </p>
+
+            </div>
+
+
+            <!-- STATUS -->
+
+            {% if profile.verification_status == "approved" %}
+
+            <div class="inline-flex items-center gap-2
+                           w-fit
+                           px-3 py-2
+                           rounded-xl
+                           bg-green-50
+                           text-green-700
+                           border border-green-200
+                           text-xs font-bold">
+
+                <i class="fa-solid fa-circle-check"></i>
+
+                Terverifikasi
+
+            </div>
+
+            {% elif profile.verification_status == "pending" %}
+
+            <div class="inline-flex items-center gap-2
+                           w-fit
+                           px-3 py-2
+                           rounded-xl
+                           bg-yellow-50
+                           text-yellow-700
+                           border border-yellow-200
+                           text-xs font-bold">
+
+                <i class="fa-solid fa-clock"></i>
+
+                Menunggu Verifikasi
+
+            </div>
+
+            {% elif profile.verification_status == "rejected" %}
+
+            <div class="inline-flex items-center gap-2
+                           w-fit
+                           px-3 py-2
+                           rounded-xl
+                           bg-red-50
+                           text-red-700
+                           border border-red-200
+                           text-xs font-bold">
+
+                <i class="fa-solid fa-circle-xmark"></i>
+
+                Ditolak
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         REJECTION ALERT
+    ====================================================== -->
+
+    {% if profile.verification_status == "rejected" %}
+
+    <div class="mb-5
+                   rounded-2xl
+                   border border-red-200
+                   bg-red-50
+                   p-4">
+
+        <div class="flex gap-3">
+
+            <div class="w-10 h-10 shrink-0
+                           rounded-xl
+                           bg-red-100
+                           text-red-600
+                           flex items-center justify-center">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+            </div>
+
+
+            <div class="min-w-0">
+
+                <h3 class="font-black text-red-800">
+
+                    Pengajuan Verifikasi Ditolak
+
+                </h3>
+
+
+                {% if profile.rejection_reason %}
+
+                <p class="text-sm
+                                   text-red-700
+                                   mt-1
+                                   leading-relaxed">
+
+                    <span class="font-bold">
+                        Alasan dari admin:
+                    </span>
+
+                    {{ profile.rejection_reason }}
+
+                </p>
+
+                {% else %}
+
+                <p class="text-sm
+                                   text-red-700
+                                   mt-1">
+
+                    Data pedagang perlu diperbaiki sebelum
+                    dapat diajukan kembali.
+
+                </p>
+
+                {% endif %}
+
+
+                <div class="mt-3
+                               inline-flex
+                               items-center
+                               gap-2
+                               text-xs
+                               font-bold
+                               text-red-700">
+
+                    <i class="fa-solid fa-arrow-down"></i>
+
+                    Periksa kembali bagian Data Pedagang
+                    yang ditandai merah.
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =====================================================
+         FORM
+    ====================================================== -->
+
+    <form method="post" enctype="multipart/form-data" id="sellerProfileForm">
+
+
+        <div class="grid grid-cols-1
+                   lg:grid-cols-2
+                   gap-5">
+
+
+            <!-- =================================================
+                 INFORMASI AKUN
+            ================================================== -->
+
+            <div class="bg-white
+                       border border-slate-200
+                       rounded-2xl
+                       p-5
+                       shadow-sm">
+
+                <div class="flex items-center gap-3
+                           mb-5">
+
+                    <div class="w-10 h-10
+                               shrink-0
+                               rounded-xl
+                               bg-blue-100
+                               text-blue-700
+                               flex items-center justify-center">
+
+                        <i class="fa-solid fa-user"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <h2 class="font-black
+                                   text-slate-800">
+
+                            Informasi Akun
+
+                        </h2>
+
+                        <p class="text-xs
+                                   text-slate-500">
+
+                            Data akun dan kontak.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="space-y-4">
+
+
+                    <!-- NAMA -->
+
+                    <div>
+
+                        <label class="flex items-center gap-2
+                                   text-xs font-bold
+                                   text-slate-700
+                                   mb-1.5">
+
+                            <i class="fa-solid fa-user
+                                       text-slate-400">
+                            </i>
+
+                            Nama Lengkap
+
+                            <span class="text-red-500">*</span>
+
+                        </label>
+
+
+                        <input required type="text" name="name" id="name" value="{{ current_user.name or '' }}"
+                            placeholder="Masukkan nama lengkap" class="important-field
+                                   w-full
+                                   border border-slate-200
+                                   rounded-xl
+                                   px-3 py-2.5
+                                   text-sm
+                                   focus:outline-none
+                                   focus:ring-2
+                                   focus:ring-teal-500">
+
+                    </div>
+
+
+
+                    <!-- EMAIL -->
+
+                    <div>
+
+                        <label class="flex items-center gap-2
+                                   text-xs font-bold
+                                   text-slate-700
+                                   mb-1.5">
+
+                            <i class="fa-solid fa-envelope
+                                       text-slate-400">
+                            </i>
+
+                            Email
+
+                            <span class="text-red-500">*</span>
+
+                        </label>
+
+
+                        <input required type="email" name="email" id="email" value="{{ current_user.email or '' }}"
+                            placeholder="Masukkan email" class="w-full
+                                   border border-slate-200
+                                   rounded-xl
+                                   px-3 py-2.5
+                                   text-sm
+                                   focus:outline-none
+                                   focus:ring-2
+                                   focus:ring-teal-500">
+
+
+                        <p class="text-[11px]
+                                   text-slate-400
+                                   mt-1">
+
+                            <i class="fa-solid fa-circle-info mr-1"></i>
+
+                            Perubahan email tidak memerlukan
+                            verifikasi admin.
+
+                        </p>
+
+                    </div>
+
+
+
+                    <!-- WHATSAPP -->
+
+                    <div>
+
+                        <label class="flex items-center gap-2
+                                   text-xs font-bold
+                                   text-slate-700
+                                   mb-1.5">
+
+                            <i class="fa-brands fa-whatsapp
+                                       text-green-500">
+                            </i>
+
+                            Nomor WhatsApp
+
+                        </label>
+
+
+                        <input type="text" name="phone" id="phone" value="{{ current_user.phone or '' }}"
+                            placeholder="08xxxxxxxxxx" class="important-field
+                                   w-full
+                                   border border-slate-200
+                                   rounded-xl
+                                   px-3 py-2.5
+                                   text-sm
+                                   focus:outline-none
+                                   focus:ring-2
+                                   focus:ring-teal-500">
+
+
+                        <p class="text-[11px]
+                                   text-slate-400
+                                   mt-1">
+
+                            <i class="fa-solid fa-shield-halved mr-1"></i>
+
+                            Perubahan nomor memerlukan verifikasi admin.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 DATA PEDAGANG
+            ================================================== -->
+
+            <div class="
+                {% if profile.verification_status == 'rejected' %}
+                    border-red-300
+                {% else %}
+                    border-slate-200
+                {% endif %}
+                bg-white
+                border
+                rounded-2xl
+                p-5
+                shadow-sm
+                ">
+
+
+                <div class="flex items-center
+                           justify-between
+                           gap-3 mb-5">
+
+                    <div class="flex items-center gap-3">
+
+                        <div class="
+                            w-10 h-10 shrink-0
+                            rounded-xl
+                            flex items-center justify-center
+
+                            {% if profile.verification_status == 'rejected' %}
+                                bg-red-100 text-red-600
+                            {% else %}
+                                bg-teal-100 text-teal-700
+                            {% endif %}
+                            ">
+
+                            <i class="fa-solid fa-store"></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <h2 class="font-black text-slate-800">
+
+                                Data Pedagang
+
+                            </h2>
+
+                            <p class="text-xs text-slate-500">
+
+                                Data penting untuk verifikasi.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if profile.verification_status == "rejected" %}
+
+                    <span class="shrink-0
+                                   inline-flex items-center gap-1
+                                   px-2 py-1
+                                   rounded-lg
+                                   bg-red-50
+                                   border border-red-200
+                                   text-[10px]
+                                   font-bold
+                                   text-red-600">
+
+                        <i class="fa-solid fa-pen"></i>
+
+                        Perlu Diperbaiki
+
+                    </span>
+
+                    {% endif %}
+
+                </div>
+
+
+
+                {% if profile.verification_status == "rejected" %}
+
+                <div class="mb-4
+                               flex items-start gap-2
+                               rounded-xl
+                               bg-red-50
+                               border border-red-200
+                               p-3">
+
+                    <i class="fa-solid fa-circle-exclamation
+                                   text-red-500 mt-0.5">
+                    </i>
+
+                    <p class="text-xs
+                                   text-red-700
+                                   leading-relaxed">
+
+                        Data pada bagian ini sebelumnya ditolak
+                        atau perlu diperbaiki berdasarkan hasil
+                        pemeriksaan admin.
+
+                        Silakan sesuaikan dengan alasan penolakan
+                        di atas.
+
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+
+                <div class="space-y-4">
+
+
+                    <!-- NIK -->
+
+                    <div>
+
+                        <label class="flex items-center gap-2
+                                   text-xs font-bold
+                                   text-slate-700
+                                   mb-1.5">
+
+                            <i class="fa-solid fa-id-card
+                                       text-slate-400">
+                            </i>
+
+                            NIK
+
+                            <span class="text-red-500">*</span>
+
+                        </label>
+
+
+                        <input required type="text" name="nik" id="nik" value="{{ profile.nik or '' }}"
+                            placeholder="Masukkan NIK" class="important-field
+                                   w-full
+                                   border border-slate-200
+                                   rounded-xl
+                                   px-3 py-2.5
+                                   text-sm
+                                   focus:outline-none
+                                   focus:ring-2
+                                   focus:ring-teal-500">
+
+                    </div>
+
+
+
+                    <!-- NAMA TOKO -->
+
+                    <div>
+
+                        <label class="flex items-center gap-2
+                                   text-xs font-bold
+                                   text-slate-700
+                                   mb-1.5">
+
+                            <i class="fa-solid fa-shop
+                                       text-slate-400">
+                            </i>
+
+                            Nama Toko
+
+                            <span class="text-red-500">*</span>
+
+                        </label>
+
+
+                        <input required type="text" name="store_name" id="store_name"
+                            value="{{ profile.store_name or '' }}" placeholder="Masukkan nama toko" class="important-field
+                                   w-full
+                                   border border-slate-200
+                                   rounded-xl
+                                   px-3 py-2.5
+                                   text-sm
+                                   focus:outline-none
+                                   focus:ring-2
+                                   focus:ring-teal-500">
+
+                    </div>
+
+
+
+                    <!-- ALAMAT -->
+
+                    <div class="grid grid-cols-1
+                               sm:grid-cols-2
+                               gap-3">
+
+
+                        <!-- ALAMAT PEMILIK -->
+
+                        <div>
+
+                            <label class="flex items-center gap-2
+                                       text-xs font-bold
+                                       text-slate-700
+                                       mb-1.5">
+
+                                <i class="fa-solid fa-location-dot
+                                           text-slate-400">
+                                </i>
+
+                                Alamat Pemilik
+
+                            </label>
+
+
+                            <textarea name="address" id="address" rows="3" placeholder="Alamat pemilik" class="important-field
+                                       w-full
+                                       border border-slate-200
+                                       rounded-xl
+                                       px-3 py-2.5
+                                       text-sm
+                                       resize-none
+                                       focus:outline-none
+                                       focus:ring-2
+                                       focus:ring-teal-500">{{ profile.address or '' }}</textarea>
+
+                        </div>
+
+
+
+                        <!-- ALAMAT TOKO -->
+
+                        <div>
+
+                            <label class="flex items-center gap-2
+                                       text-xs font-bold
+                                       text-slate-700
+                                       mb-1.5">
+
+                                <i class="fa-solid fa-map-location-dot
+                                           text-slate-400">
+                                </i>
+
+                                Alamat Toko
+
+                            </label>
+
+
+                            <textarea name="store_address" id="store_address" rows="3" placeholder="Alamat toko" class="important-field
+                                       w-full
+                                       border border-slate-200
+                                       rounded-xl
+                                       px-3 py-2.5
+                                       text-sm
+                                       resize-none
+                                       focus:outline-none
+                                       focus:ring-2
+                                       focus:ring-teal-500">{{ profile.store_address or '' }}</textarea>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- KTP -->
+
+                    <div>
+
+                        <label class="flex items-center gap-2
+                                   text-xs font-bold
+                                   text-slate-700
+                                   mb-1.5">
+
+                            <i class="fa-solid fa-address-card
+                                       text-slate-400">
+                            </i>
+
+                            KTP
+
+                        </label>
+
+
+                        {% if profile.ktp_file %}
+
+                        <div class="
+                                flex items-center gap-3
+                                mb-2 p-2.5
+                                rounded-xl
+                                bg-slate-50
+                                border border-slate-200
+                                ">
+
+                            <div class="w-9 h-9
+                                           shrink-0
+                                           rounded-lg
+                                           bg-teal-100
+                                           text-teal-700
+                                           flex items-center justify-center">
+
+                                <i class="fa-solid fa-id-card"></i>
+
+                            </div>
+
+
+                            <div class="min-w-0 flex-1">
+
+                                <p class="text-xs
+                                               font-bold
+                                               text-slate-700">
+
+                                    KTP saat ini
+
+                                </p>
+
+                                <p class="text-[11px]
+                                               text-slate-500
+                                               truncate">
+
+                                    {{ profile.ktp_file }}
+
+                                </p>
+
+                            </div>
+
+
+                            <i class="fa-solid fa-circle-check
+                                           text-green-500">
+                            </i>
+
+                        </div>
+
+                        {% endif %}
+
+
+                        <input type="file" name="ktp" id="ktp" accept=".jpg,.jpeg,.png,.webp" class="w-full
+                                   border border-slate-200
+                                   rounded-xl
+                                   p-2.5
+                                   text-xs
+                                   focus:outline-none
+                                   focus:ring-2
+                                   focus:ring-teal-500">
+
+
+                        <p class="text-[11px]
+                                   text-slate-400
+                                   mt-1">
+
+                            <i class="fa-solid fa-info-circle mr-1"></i>
+
+                            Upload KTP baru jika ingin mengganti KTP.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 PASSWORD
+            ================================================== -->
+
+            <div class="lg:col-span-2
+                       bg-white
+                       border border-slate-200
+                       rounded-2xl
+                       p-5
+                       shadow-sm">
+
+                <div class="flex flex-col
+                           sm:flex-row
+                           sm:items-center
+                           sm:justify-between
+                           gap-3 mb-4">
+
+                    <div class="flex items-center gap-3">
+
+                        <div class="w-10 h-10
+                                   rounded-xl
+                                   bg-purple-100
+                                   text-purple-700
+                                   flex items-center justify-center">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <h2 class="font-black
+                                       text-slate-800">
+
+                                Ubah Password
+
+                            </h2>
+
+                            <p class="text-xs
+                                       text-slate-500">
+
+                                Kosongkan jika tidak ingin mengubah.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <span class="inline-flex
+                               items-center gap-1.5
+                               w-fit
+                               text-[11px]
+                               font-bold
+                               text-purple-700
+                               bg-purple-50
+                               border border-purple-100
+                               rounded-lg
+                               px-2.5 py-1.5">
+
+                        <i class="fa-solid fa-shield-check"></i>
+
+                        Tidak perlu verifikasi
+
+                    </span>
+
+                </div>
+
+
+                <div class="grid grid-cols-1
+                           sm:grid-cols-2
+                           gap-3">
+
+
+                    <!-- PASSWORD -->
+
+                    <div>
+
+                        <label class="flex items-center gap-2
+                                   text-xs font-bold
+                                   text-slate-700
+                                   mb-1.5">
+
+                            <i class="fa-solid fa-key
+                                       text-slate-400">
+                            </i>
+
+                            Password Baru
+
+                        </label>
+
+
+                        <input type="password" name="password" id="password" minlength="6"
+                            placeholder="Minimal 6 karakter" class="w-full
+                                   border border-slate-200
+                                   rounded-xl
+                                   px-3 py-2.5
+                                   text-sm
+                                   focus:outline-none
+                                   focus:ring-2
+                                   focus:ring-teal-500">
+
+                    </div>
+
+
+
+                    <!-- CONFIRM -->
+
+                    <div>
+
+                        <label class="flex items-center gap-2
+                                   text-xs font-bold
+                                   text-slate-700
+                                   mb-1.5">
+
+                            <i class="fa-solid fa-key
+                                       text-slate-400">
+                            </i>
+
+                            Konfirmasi Password
+
+                        </label>
+
+
+                        <input type="password" name="password_confirmation" id="password_confirmation" minlength="6"
+                            placeholder="Ulangi password" class="w-full
+                                   border border-slate-200
+                                   rounded-xl
+                                   px-3 py-2.5
+                                   text-sm
+                                   focus:outline-none
+                                   focus:ring-2
+                                   focus:ring-teal-500">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             INFO VERIFIKASI
+        ====================================================== -->
+
+        <div class="mt-5
+                   flex items-start gap-3
+                   rounded-xl
+                   bg-slate-50
+                   border border-slate-200
+                   p-3.5">
+
+            <i class="fa-solid fa-circle-info
+                       text-teal-600
+                       mt-0.5">
+            </i>
+
+            <p class="text-xs
+                       text-slate-500
+                       leading-relaxed">
+
+                Perubahan
+                <b>nama, WhatsApp, NIK, nama toko,
+                    alamat, atau KTP</b>
+                memerlukan verifikasi ulang admin.
+
+                Email dan password dapat diubah tanpa
+                verifikasi ulang.
+
+            </p>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             BUTTON
+        ====================================================== -->
+
+        <button type="submit" id="submitButton" disabled class="mt-5
+                   w-full
+                   py-3
+                   rounded-xl
+                   font-bold
+                   text-sm
+                   flex items-center
+                   justify-center
+                   gap-2
+                   transition
+                   bg-slate-200
+                   text-slate-400
+                   cursor-not-allowed">
+
+            <i id="submitIcon" class="fa-solid fa-lock">
+            </i>
+
+            <span id="submitText">
+                Tidak Ada Perubahan
+            </span>
+
+        </button>
+
+
+    </form>
+
+</div>
+
+
+
+
+<!-- =========================================================
+     SWEETALERT
+========================================================= -->
+
+<script>
+
+/* =====================================================
+   POSISI SWEETALERT2 DI ATAS LOADING GLOBAL
+===================================================== */
+(function () {
+    const style = document.createElement("style");
+
+    style.textContent = `
+        .swal2-container {
+            z-index: 2147483647 !important;
+            pointer-events: auto !important;
+        }
+
+        .swal2-popup,
+        .swal2-actions,
+        .swal2-confirm,
+        .swal2-cancel {
+            pointer-events: auto !important;
+        }
+    `;
+
+    document.head.appendChild(style);
+})();
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById("sellerProfileForm");
+    const submitButton = document.getElementById("submitButton");
+    const submitText = document.getElementById("submitText");
+    const submitIcon = document.getElementById("submitIcon");
+
+    if (!form || !submitButton) {
+        return;
+    }
+
+
+    /* =====================================================
+       DATA AWAL DARI FORM
+    ===================================================== */
+
+    const initialData = {
+        name: form.querySelector('[name="name"]').value,
+        email: form.querySelector('[name="email"]').value,
+        phone: form.querySelector('[name="phone"]').value,
+
+        nik: form.querySelector('[name="nik"]').value,
+        store_name: form.querySelector('[name="store_name"]').value,
+        address: form.querySelector('[name="address"]').value,
+        store_address: form.querySelector('[name="store_address"]').value
+    };
+
+
+    /* =====================================================
+       NORMALISASI
+    ===================================================== */
+
+    function normalize(value) {
+        return String(value || "").trim();
+    }
+
+
+    /* =====================================================
+       CEK DATA PENTING BERUBAH
+    ===================================================== */
+
+    function importantDataChanged() {
+
+        const name =
+            form.querySelector('[name="name"]').value;
+
+        const phone =
+            form.querySelector('[name="phone"]').value;
+
+        const nik =
+            form.querySelector('[name="nik"]').value;
+
+        const storeName =
+            form.querySelector('[name="store_name"]').value;
+
+        const address =
+            form.querySelector('[name="address"]').value;
+
+        const storeAddress =
+            form.querySelector('[name="store_address"]').value;
+
+        return (
+            normalize(name) !== normalize(initialData.name) ||
+            normalize(phone) !== normalize(initialData.phone) ||
+            normalize(nik) !== normalize(initialData.nik) ||
+            normalize(storeName) !== normalize(initialData.store_name) ||
+            normalize(address) !== normalize(initialData.address) ||
+            normalize(storeAddress) !== normalize(initialData.store_address)
+        );
+    }
+
+
+    /* =====================================================
+       CEK KTP
+    ===================================================== */
+
+    function ktpChanged() {
+
+        const ktp = form.querySelector('[name="ktp"]');
+
+        if (!ktp) {
+            return false;
+        }
+
+        return ktp.files && ktp.files.length > 0;
+    }
+
+
+    /* =====================================================
+       CEK EMAIL
+    ===================================================== */
+
+    function emailChanged() {
+
+        const email =
+            form.querySelector('[name="email"]').value;
+
+        return normalize(email) !== normalize(initialData.email);
+    }
+
+
+    /* =====================================================
+       CEK PASSWORD
+    ===================================================== */
+
+    function passwordChanged() {
+
+        const password =
+            form.querySelector('[name="password"]').value;
+
+        const confirmation =
+            form.querySelector('[name="password_confirmation"]').value;
+
+        return password !== "" || confirmation !== "";
+    }
+
+
+    /* =====================================================
+       CEK FIELD WAJIB
+    ===================================================== */
+
+    function requiredFieldsFilled() {
+
+        const requiredFields =
+            form.querySelectorAll("[required]");
+
+        for (const field of requiredFields) {
+
+            if (normalize(field.value) === "") {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    /* =====================================================
+       UPDATE TOMBOL
+    ===================================================== */
+
+    function updateButton() {
+
+        const requiredComplete =
+            requiredFieldsFilled();
+
+        const importantChanged =
+            importantDataChanged() || ktpChanged();
+
+        const emailChangedValue =
+            emailChanged();
+
+        const passwordChangedValue =
+            passwordChanged();
+
+        const anythingChanged =
+            importantChanged ||
+            emailChangedValue ||
+            passwordChangedValue;
+
+
+        /* DATA WAJIB BELUM LENGKAP */
+
+        if (!requiredComplete) {
+
+            submitButton.disabled = true;
+
+            submitButton.className =
+                "mt-5 w-full py-3 rounded-xl " +
+                "font-bold text-sm flex items-center " +
+                "justify-center gap-2 transition " +
+                "bg-slate-200 text-slate-400 " +
+                "cursor-not-allowed";
+
+            submitIcon.className = "fa-solid fa-lock";
+
+            submitText.textContent = "Lengkapi Data Wajib";
+
+            return;
+        }
+
+
+        /* TIDAK ADA PERUBAHAN */
+
+        if (!anythingChanged) {
+
+            submitButton.disabled = true;
+
+            submitButton.className =
+                "mt-5 w-full py-3 rounded-xl " +
+                "font-bold text-sm flex items-center " +
+                "justify-center gap-2 transition " +
+                "bg-slate-200 text-slate-400 " +
+                "cursor-not-allowed";
+
+            submitIcon.className = "fa-solid fa-lock";
+
+            submitText.textContent = "Tidak Ada Perubahan";
+
+            return;
+        }
+
+
+        /* DATA PENTING BERUBAH */
+
+        if (importantChanged) {
+
+            submitButton.disabled = false;
+
+            submitButton.className =
+                "mt-5 w-full py-3 rounded-xl " +
+                "font-bold text-sm flex items-center " +
+                "justify-center gap-2 transition " +
+                "bg-teal-700 hover:bg-teal-800 " +
+                "text-white cursor-pointer";
+
+            submitIcon.className = "fa-solid fa-paper-plane";
+
+            submitText.textContent =
+                "Simpan & Ajukan Verifikasi Lagi";
+
+            return;
+        }
+
+
+        /* HANYA EMAIL / PASSWORD */
+
+        submitButton.disabled = false;
+
+        submitButton.className =
+            "mt-5 w-full py-3 rounded-xl " +
+            "font-bold text-sm flex items-center " +
+            "justify-center gap-2 transition " +
+            "bg-teal-700 hover:bg-teal-800 " +
+            "text-white cursor-pointer";
+
+        submitIcon.className = "fa-solid fa-save";
+
+        submitText.textContent = "Simpan Perubahan";
+    }
+
+
+    /* =====================================================
+       EVENT INPUT
+    ===================================================== */
+
+    form.querySelectorAll("input, textarea").forEach(function (field) {
+
+        field.addEventListener("input", updateButton);
+
+        field.addEventListener("change", updateButton);
+
+    });
+
+
+    /* =====================================================
+       SUBMIT FORM
+    ===================================================== */
+
+    form.addEventListener("submit", function (event) {
+
+        const importantChanged =
+            importantDataChanged() || ktpChanged();
+
+
+        /* DATA PENTING BERUBAH */
+
+        if (importantChanged) {
+
+            event.preventDefault();
+
+            Swal.fire({
+
+                icon: "warning",
+
+                title: "Ajukan Verifikasi Ulang?",
+
+                html:
+                    "<div class='text-sm text-slate-600'>" +
+                    "Anda mengubah <b>data penting pedagang</b>." +
+                    "<br><br>" +
+                    "Data akan dikirim kembali kepada admin " +
+                    "untuk proses verifikasi." +
+                    "</div>",
+
+                showCancelButton: true,
+
+                confirmButtonText:
+                    "<i class='fa-solid fa-paper-plane'></i> Ya, Ajukan",
+
+                cancelButtonText:
+                    "<i class='fa-solid fa-xmark'></i> Batal",
+
+                confirmButtonColor: "#0f766e",
+
+                cancelButtonColor: "#64748b",
+
+                reverseButtons: true,
+
+                heightAuto: false,
+
+                didOpen: function () {
+                    const container = Swal.getContainer();
+
+                    if (container) {
+                        container.style.zIndex = "2147483647";
+                        container.style.pointerEvents = "auto";
+                    }
+                }
+
+            }).then(function (result) {
+
+                if (result.isConfirmed) {
+
+                    Swal.fire({
+
+                        title: "Menyimpan...",
+
+                        text:
+                            "Data sedang disimpan dan diajukan " +
+                            "untuk verifikasi admin.",
+
+                        allowOutsideClick: false,
+
+                        allowEscapeKey: false,
+
+                        heightAuto: false,
+
+                        didOpen: function () {
+
+                            Swal.showLoading();
+
+                        }
+
+                    });
+
+                    form.submit();
+                }
+
+            });
+
+            return;
+        }
+
+
+        /* EMAIL / PASSWORD */
+
+        event.preventDefault();
+
+        Swal.fire({
+
+            icon: "question",
+
+            title: "Simpan Perubahan?",
+
+            text:
+                "Perubahan email atau password " +
+                "tidak memerlukan verifikasi admin.",
+
+            showCancelButton: true,
+
+            confirmButtonText:
+                "<i class='fa-solid fa-save'></i> Simpan",
+
+            cancelButtonText:
+                "<i class='fa-solid fa-xmark'></i> Batal",
+
+            confirmButtonColor: "#0f766e",
+
+            cancelButtonColor: "#64748b",
+
+            reverseButtons: true,
+
+            heightAuto: false,
+
+            didOpen: function () {
+
+                const container = Swal.getContainer();
+
+                if (container) {
+                    container.style.zIndex = "2147483647";
+                    container.style.pointerEvents = "auto";
+                }
+
+            }
+
+        }).then(function (result) {
+
+            if (result.isConfirmed) {
+
+                Swal.fire({
+
+                    title: "Menyimpan...",
+
+                    allowOutsideClick: false,
+
+                    allowEscapeKey: false,
+
+                    heightAuto: false,
+
+                    didOpen: function () {
+
+                        Swal.showLoading();
+
+                    }
+
+                });
+
+                form.submit();
+            }
+
+        });
+
+    });
+
+
+    /* =====================================================
+       KONDISI AWAL
+    ===================================================== */
+
+    updateButton();
+
+});
+
+</script>
+
+
+{% endblock %}

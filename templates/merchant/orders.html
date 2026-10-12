@@ -1,0 +1,10 @@
+{% extends 'base.html' %}{% block content %}<h2>Pesanan Toko</h2>{% for o in orders %}<div class="card mb-2">
+    <div class="card-body"><b>{{o.order_number}}</b> — {{o.order_status}}<form method="post" class="d-flex gap-2 mt-2"
+            action="{{url_for('merchant_order_status',oid=o.id)}}"><select class="form-select" name="status">
+                <option>Diproses</option>
+                <option>Siap Diambil</option>
+                <option>Dalam Pengantaran</option>
+                <option>Selesai</option>
+            </select><button class="btn btn-primary">Update</button></form>
+    </div>
+</div>{% else %}<p>Belum ada pesanan.</p>{% endfor %}{% endblock %}

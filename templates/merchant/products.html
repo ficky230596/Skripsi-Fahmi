@@ -1,0 +1,26 @@
+{% extends 'base.html' %}{% block content %}<h2>Produk Toko</h2>
+<div class="card p-3 mb-4">
+    <form method="post" enctype="multipart/form-data" class="row g-2">
+        <div class="col-md-4"><input class="form-control" name="name" placeholder="Nama produk" required></div>
+        <div class="col-md-2"><input class="form-control" name="price" type="number" placeholder="Harga" required></div>
+        <div class="col-md-2"><input class="form-control" name="stock" type="number" placeholder="Stok" required></div>
+        <div class="col-md-4"><input class="form-control" name="image" type="file"></div>
+        <div class="col-12"><textarea class="form-control" name="description" placeholder="Deskripsi"></textarea></div>
+        <div class="col-md-4"><select class="form-select" name="category_id">
+                <option value="">Kategori</option>{% for c in categories %}<option value="{{c.id}}">{{c.name}}</option>
+                {% endfor %}
+            </select></div>
+        <div class="col-md-2"><button class="btn btn-primary">Tambah</button></div>
+    </form>
+</div>
+<div class="row g-3">{% for p in products %}<div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5>{{p.name}}</h5><b>Rp {{'{:,.0f}'.format(p.price|float)}}</b>
+                <p>Stok {{p.stock}}</p><button class="btn btn-outline-danger btn-sm del"
+                    data-id="{{p.id}}">Nonaktifkan</button>
+            </div>
+        </div>
+    </div>{% endfor %}</div>{% endblock %}{% block scripts %}
+<script>document.querySelectorAll('.del').forEach(b => b.onclick = async () => { if ((await Swal.fire({ title: 'Nonaktifkan produk?', showCancelButton: true, confirmButtonText: 'Ya' })).isConfirmed) { await fetch(`/merchant/products/${b.dataset.id}/delete`, { method: 'POST' }); location.reload() } })</script>
+{% endblock %}

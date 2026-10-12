@@ -1,0 +1,720 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1 class="text-3xl font-black mb-5">
+    <i class="fa-solid fa-wallet text-teal-700 mr-2"></i>
+    Saldo & Penarikan
+</h1>
+
+<div class="grid md:grid-cols-3 gap-4 mb-6">
+
+    <!-- Saldo Dapat Dicairkan -->
+    <div class="bg-teal-700 text-white rounded-2xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+            <p class="text-teal-100">
+                Saldo dapat dicairkan
+            </p>
+
+            <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                <i class="fa-solid fa-money-bill-wave text-lg"></i>
+            </div>
+        </div>
+
+        <b class="text-2xl">
+            {{ rupiah(balance.available_balance) }}
+        </b>
+    </div>
+
+
+    <!-- Dana Ditahan -->
+    <div class="bg-white border rounded-2xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+            <p class="text-slate-500">
+                Dana ditahan
+            </p>
+
+            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <i class="fa-solid fa-lock text-lg"></i>
+            </div>
+        </div>
+
+        <b class="text-2xl">
+            {{ rupiah(balance.held_balance) }}
+        </b>
+    </div>
+
+
+    <!-- Total Diperoleh -->
+    <div class="bg-white border rounded-2xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+            <p class="text-slate-500">
+                Total diperoleh
+            </p>
+
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <i class="fa-solid fa-chart-line text-lg"></i>
+            </div>
+        </div>
+
+        <b class="text-2xl">
+            {{ rupiah(balance.total_earned) }}
+        </b>
+    </div>
+
+</div>
+
+
+<div class="grid lg:grid-cols-2 gap-5">
+
+    <!-- FORM PENARIKAN -->
+    <form
+        method="post"
+        id="withdrawalForm"
+        class="bg-white border rounded-2xl p-5 space-y-4 shadow-sm"
+    >
+
+        <div class="flex items-center gap-3 mb-2">
+
+            <div class="w-11 h-11 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center">
+                <i class="fa-solid fa-money-bill-transfer text-xl"></i>
+            </div>
+
+            <div>
+                <h2 class="font-black text-lg">
+                    Ajukan Penarikan
+                </h2>
+
+                <p class="text-sm text-slate-500">
+                    Masukkan informasi rekening tujuan.
+                </p>
+            </div>
+
+        </div>
+
+
+        <!-- JUMLAH PENARIKAN -->
+        <div>
+
+            <label class="block text-sm font-bold mb-1">
+                <i class="fa-solid fa-money-bill-wave text-teal-700 mr-1"></i>
+                Jumlah Penarikan
+            </label>
+
+            <div class="relative">
+
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
+                    Rp
+                </span>
+
+                <input
+                    required
+                    type="number"
+                    min="1"
+                    max="{{ balance.available_balance }}"
+                    name="amount"
+                    id="amount"
+                    placeholder="Jumlah"
+                    class="w-full border rounded-xl p-3 pl-12 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                >
+
+            </div>
+
+
+            <p class="text-xs text-slate-500 mt-1">
+
+                <i class="fa-solid fa-circle-info mr-1"></i>
+
+                Maksimal pencairan:
+
+                <span class="font-bold text-teal-700">
+                    {{ rupiah(balance.available_balance) }}
+                </span>
+
+            </p>
+
+
+            <!-- WARNING MELEBIHI SALDO -->
+            <div
+                id="amountWarning"
+                class="hidden mt-2 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-semibold"
+            >
+
+                <i class="fa-solid fa-circle-exclamation mr-1"></i>
+
+                Nominal penarikan melebihi saldo yang tersedia.
+
+            </div>
+
+
+            <!-- WARNING NOMINAL KOSONG / INVALID -->
+            <div
+                id="amountEmptyWarning"
+                class="hidden mt-2 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm font-semibold"
+            >
+
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+
+                Masukkan nominal penarikan yang valid.
+
+            </div>
+
+        </div>
+
+
+        <!-- BANK -->
+        <div>
+
+            <label class="block text-sm font-bold mb-1">
+                <i class="fa-solid fa-building-columns text-teal-700 mr-1"></i>
+                Nama Bank
+            </label>
+
+            <div class="relative">
+
+                <i class="fa-solid fa-building-columns absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+
+                <input
+                    required
+                    name="bank_name"
+                    id="bank_name"
+                    placeholder="Contoh: BRI"
+                    class="w-full border rounded-xl p-3 pl-10 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- NOMOR REKENING -->
+        <div>
+
+            <label class="block text-sm font-bold mb-1">
+                <i class="fa-solid fa-credit-card text-teal-700 mr-1"></i>
+                Nomor Rekening
+            </label>
+
+            <div class="relative">
+
+                <i class="fa-solid fa-credit-card absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+
+                <input
+                    required
+                    type="text"
+                    inputmode="numeric"
+                    name="bank_account"
+                    id="bank_account"
+                    placeholder="Nomor rekening"
+                    class="w-full border rounded-xl p-3 pl-10 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- NAMA PEMILIK -->
+        <div>
+
+            <label class="block text-sm font-bold mb-1">
+                <i class="fa-solid fa-user text-teal-700 mr-1"></i>
+                Nama Pemilik Rekening
+            </label>
+
+            <div class="relative">
+
+                <i class="fa-solid fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+
+                <input
+                    required
+                    name="account_name"
+                    id="account_name"
+                    placeholder="Nama pemilik rekening"
+                    class="w-full border rounded-xl p-3 pl-10 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- TOMBOL AJUKAN -->
+        <button
+            type="submit"
+            id="submitWithdrawal"
+            disabled
+            class="w-full bg-teal-700 text-white p-3 rounded-xl font-bold opacity-50 cursor-not-allowed transition-all duration-200 hover:bg-teal-800"
+        >
+
+            <i class="fa-solid fa-paper-plane mr-2"></i>
+
+            Ajukan Penarikan
+
+        </button>
+
+    </form>
+
+
+    <!-- RIWAYAT PENARIKAN -->
+    <div class="bg-white border rounded-2xl p-5 shadow-sm">
+
+        <div class="flex items-center gap-3 mb-4">
+
+            <div class="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+
+                <i class="fa-solid fa-clock-rotate-left text-xl"></i>
+
+            </div>
+
+            <div>
+
+                <h2 class="font-black text-lg">
+                    Riwayat Penarikan
+                </h2>
+
+                <p class="text-sm text-slate-500">
+                    Daftar pengajuan penarikan saldo.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% for w in withdrawals %}
+
+        <div class="py-4 border-b flex justify-between items-center gap-3">
+
+            <div class="flex items-center gap-3 min-w-0">
+
+                <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0">
+
+                    <i class="fa-solid fa-money-bill-transfer"></i>
+
+                </div>
+
+                <span class="min-w-0">
+
+                    <strong class="block">
+                        {{ rupiah(w.amount) }}
+                    </strong>
+
+                    <small class="block text-slate-400 truncate">
+
+                        <i class="fa-solid fa-building-columns mr-1"></i>
+
+                        {{ w.bank_name }}
+
+                        <span class="mx-1">·</span>
+
+                        <i class="fa-solid fa-credit-card mr-1"></i>
+
+                        {{ w.bank_account }}
+
+                    </small>
+
+                </span>
+
+            </div>
+
+
+            {% if w.status == 'pending' %}
+
+            <b class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-xs whitespace-nowrap">
+
+                <i class="fa-solid fa-clock"></i>
+                Menunggu
+
+            </b>
+
+            {% elif w.status == 'paid' %}
+
+            <b class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs whitespace-nowrap">
+
+                <i class="fa-solid fa-circle-check"></i>
+                Berhasil
+
+            </b>
+
+            {% elif w.status == 'rejected' %}
+
+            <b class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-50 text-red-700 text-xs whitespace-nowrap">
+
+                <i class="fa-solid fa-circle-xmark"></i>
+                Ditolak
+
+            </b>
+
+            {% else %}
+
+            <b class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs whitespace-nowrap">
+
+                <i class="fa-solid fa-circle-info"></i>
+                {{ w.status }}
+
+            </b>
+
+            {% endif %}
+
+        </div>
+
+        {% else %}
+
+        <div class="py-10 text-center">
+
+            <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">
+
+                <i class="fa-solid fa-receipt text-2xl"></i>
+
+            </div>
+
+            <p class="text-slate-500">
+                Belum ada penarikan.
+            </p>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+<!-- CONFIG -->
+<div
+    id="withdrawalConfig"
+    data-max-balance="{{ balance.available_balance }}"
+    class="hidden"
+></div>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const amountInput = document.getElementById("amount");
+
+    const submitButton = document.getElementById("submitWithdrawal");
+
+    const withdrawalForm = document.getElementById("withdrawalForm");
+
+    const bankNameInput = document.getElementById("bank_name");
+
+    const bankAccountInput = document.getElementById("bank_account");
+
+    const accountNameInput = document.getElementById("account_name");
+
+    const amountWarning = document.getElementById("amountWarning");
+
+    const amountEmptyWarning = document.getElementById("amountEmptyWarning");
+
+    const withdrawalConfig = document.getElementById("withdrawalConfig");
+
+
+    const maxBalance = Number(
+        withdrawalConfig.dataset.maxBalance
+    );
+
+
+    /*
+    ==========================================
+    VALIDASI FORM
+    ==========================================
+    */
+
+    function validateForm() {
+
+        const amount = Number(amountInput.value);
+
+        const bankName = bankNameInput.value.trim();
+
+        const bankAccount = bankAccountInput.value.trim();
+
+        const accountName = accountNameInput.value.trim();
+
+
+        amountWarning.classList.add("hidden");
+
+        amountEmptyWarning.classList.add("hidden");
+
+
+        submitButton.disabled = true;
+
+        submitButton.classList.add(
+            "opacity-50",
+            "cursor-not-allowed"
+        );
+
+
+        /*
+        NOMINAL KOSONG / INVALID
+        */
+
+        if (!amount || amount <= 0) {
+
+            if (amountInput.value !== "") {
+
+                amountEmptyWarning.classList.remove("hidden");
+
+            }
+
+            return;
+
+        }
+
+
+        /*
+        NOMINAL MELEBIHI SALDO
+        */
+
+        if (amount > maxBalance) {
+
+            amountWarning.classList.remove("hidden");
+
+            return;
+
+        }
+
+
+        /*
+        FIELD BANK WAJIB DIISI
+        */
+
+        if (
+            bankName === "" ||
+            bankAccount === "" ||
+            accountName === ""
+        ) {
+
+            return;
+
+        }
+
+
+        /*
+        SEMUA VALID
+        */
+
+        submitButton.disabled = false;
+
+        submitButton.classList.remove(
+            "opacity-50",
+            "cursor-not-allowed"
+        );
+
+    }
+
+
+    /*
+    ==========================================
+    CEK SEMUA INPUT
+    ==========================================
+    */
+
+    amountInput.addEventListener("input", validateForm);
+
+    bankNameInput.addEventListener("input", validateForm);
+
+    bankAccountInput.addEventListener("input", validateForm);
+
+    accountNameInput.addEventListener("input", validateForm);
+
+
+    /*
+    ==========================================
+    SUBMIT FORM
+    ==========================================
+    */
+
+    withdrawalForm.addEventListener("submit", function (e) {
+
+        const amount = Number(amountInput.value);
+
+        const bankName = bankNameInput.value.trim();
+
+        const bankAccount = bankAccountInput.value.trim();
+
+        const accountName = accountNameInput.value.trim();
+
+
+        /*
+        VALIDASI TERAKHIR
+        */
+
+        if (
+            !amount ||
+            amount <= 0 ||
+            amount > maxBalance ||
+            bankName === "" ||
+            bankAccount === "" ||
+            accountName === ""
+        ) {
+
+            e.preventDefault();
+
+            validateForm();
+
+            Swal.fire({
+
+                icon: "warning",
+
+                title: "Data Belum Lengkap",
+
+                html: `
+                    <div class="text-sm text-slate-600">
+                        Pastikan nominal penarikan dan
+                        informasi rekening sudah diisi dengan benar.
+                    </div>
+                `,
+
+                confirmButtonText: `
+                    <i class="fa-solid fa-check mr-1"></i>
+                    Mengerti
+                `,
+
+                confirmButtonColor: "#0f766e",
+
+                customClass: {
+                    popup: "rounded-3xl",
+                    confirmButton: "rounded-xl px-5 py-3 font-bold"
+                }
+
+            });
+
+            return;
+
+        }
+
+
+        /*
+        ==========================================
+        CEGAH DOUBLE SUBMIT
+        ==========================================
+        */
+
+        submitButton.disabled = true;
+
+        submitButton.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+            Memproses...
+        `;
+
+        submitButton.classList.add(
+            "opacity-70",
+            "cursor-not-allowed"
+        );
+
+
+        /*
+        ==========================================
+        SWEETALERT LOADING
+        ==========================================
+        */
+
+        Swal.fire({
+
+            title: "Memproses Penarikan",
+
+            html: `
+                <div class="flex flex-col items-center justify-center py-3">
+
+                    <!-- ANIMASI LOADING -->
+
+                    <div class="relative w-24 h-24 mb-5">
+
+                        <div
+                            class="absolute inset-0 rounded-full border-4 border-teal-100"
+                        ></div>
+
+                        <div
+                            class="absolute inset-0 rounded-full border-4 border-transparent border-t-teal-600 animate-spin"
+                        ></div>
+
+                        <div
+                            class="absolute inset-2 rounded-full border-4 border-transparent border-b-teal-400 animate-spin"
+                            style="animation-direction: reverse; animation-duration: 1.5s;"
+                        ></div>
+
+                        <div
+                            class="absolute inset-0 flex items-center justify-center"
+                        >
+
+                            <i
+                                class="fa-solid fa-money-bill-transfer text-3xl text-teal-700"
+                            ></i>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- TEKS -->
+
+                    <p class="text-slate-700 font-bold text-base">
+                        Sedang mengirim permintaan
+                    </p>
+
+                    <p class="text-slate-400 text-sm mt-1">
+                        Mohon tunggu, jangan tutup halaman ini.
+                    </p>
+
+
+                    <!-- DOT ANIMATION -->
+
+                    <div class="flex items-center gap-1 mt-4">
+
+                        <span class="w-2 h-2 bg-teal-600 rounded-full animate-bounce"></span>
+
+                        <span
+                            class="w-2 h-2 bg-teal-600 rounded-full animate-bounce"
+                            style="animation-delay: 0.15s;"
+                        ></span>
+
+                        <span
+                            class="w-2 h-2 bg-teal-600 rounded-full animate-bounce"
+                            style="animation-delay: 0.3s;"
+                        ></span>
+
+                    </div>
+
+                </div>
+            `,
+
+            allowOutsideClick: false,
+
+            allowEscapeKey: false,
+
+            showConfirmButton: false,
+
+            showCloseButton: false,
+
+            customClass: {
+
+                popup: "rounded-3xl",
+
+                title: "font-black text-slate-800"
+
+            }
+
+        });
+
+    });
+
+
+    /*
+    ==========================================
+    VALIDASI AWAL
+    ==========================================
+    */
+
+    validateForm();
+
+});
+
+</script>
+
+{% endblock %}
+
+

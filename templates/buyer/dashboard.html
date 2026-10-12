@@ -1,0 +1,834 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- =========================================================
+     MARKETPLACE HEADER
+========================================================= -->
+
+
+
+<!-- =========================================================
+     HERO
+========================================================= -->
+<section class="relative overflow-hidden rounded-3xl
+           bg-gradient-to-br from-teal-900 via-teal-800 to-teal-600
+           text-white p-7 md:p-10 lg:p-12 mb-8">
+
+    <!-- DECORATION -->
+    <div class="absolute -right-20 -top-20 w-64 h-64
+               rounded-full bg-white/5">
+    </div>
+
+    <div class="absolute right-10 bottom-[-80px] w-48 h-48
+               rounded-full bg-white/5">
+    </div>
+
+
+    <div class="relative z-10 max-w-3xl">
+
+        <div class="inline-flex items-center gap-2
+                   bg-white/10 border border-white/10
+                   rounded-full px-4 py-2
+                   text-xs md:text-sm font-bold">
+
+            <i class="fa-solid fa-store"></i>
+
+            PASAR LOKAL DIGITAL
+
+        </div>
+
+
+        <h1 class="text-3xl md:text-4xl lg:text-5xl
+                   font-black mt-5 leading-tight">
+
+            Belanja Produk Lokal
+            <span class="text-teal-200">
+                Pasar Remboken
+            </span>
+
+        </h1>
+
+
+        <p class="mt-4 text-teal-50
+                   text-sm md:text-base
+                   leading-relaxed max-w-2xl">
+
+            Temukan berbagai produk UMKM dan pedagang lokal
+            Pasar Remboken dengan mudah. Pilih produk,
+            masukkan ke keranjang, lalu lakukan pembayaran
+            secara aman.
+
+        </p>
+
+
+        <div class="flex flex-col sm:flex-row gap-3 mt-7">
+
+            <a href="{{ url_for('catalog') }}" class="inline-flex items-center justify-center
+                       bg-white text-teal-800
+                       px-5 py-3 rounded-xl
+                       font-bold text-sm
+                       hover:bg-teal-50 transition">
+
+                <i class="fa-solid fa-store mr-2"></i>
+
+                Jelajahi Katalog
+
+                <i class="fa-solid fa-arrow-right ml-2"></i>
+
+            </a>
+
+
+            {% if current_user.is_authenticated and current_user.role == 'buyer' %}
+
+            <a href="{{ url_for('cart') }}" class="inline-flex items-center justify-center
+                           bg-white/10 hover:bg-white/20
+                           border border-white/20
+                           text-white px-5 py-3 rounded-xl
+                           font-bold text-sm transition">
+
+                <i class="fa-solid fa-cart-shopping mr-2"></i>
+
+                Lihat Keranjang
+
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</section>
+
+<section class="mb-6">
+
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 md:p-5 shadow-sm">
+
+        <div class="flex flex-col lg:flex-row gap-4 items-center">
+
+            <!-- SEARCH -->
+            <div class="w-full lg:flex-1">
+
+                <div class="relative">
+
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                    </i>
+
+                    <input type="text" id="productSearch" placeholder="Cari produk di Pasar Remboken..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200
+                               focus:outline-none focus:ring-2 focus:ring-teal-500
+                               focus:border-transparent text-sm">
+
+                </div>
+
+            </div>
+
+
+            <!-- SEARCH BUTTON -->
+            <button type="button" id="searchButton" class="w-full lg:w-auto px-6 py-3 rounded-xl
+                       bg-teal-700 hover:bg-teal-800 text-white
+                       font-bold text-sm transition">
+
+                <i class="fa-solid fa-magnifying-glass mr-2"></i>
+
+                Cari
+
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     QUICK FEATURES
+========================================================= -->
+<section class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-10">
+
+    <!-- ITEM -->
+    <div class="bg-white border border-slate-200
+               rounded-2xl p-4 md:p-5
+               flex items-center gap-3">
+
+        <div class="w-11 h-11 shrink-0 rounded-xl
+                   bg-teal-100 text-teal-700
+                   flex items-center justify-center">
+
+            <i class="fa-solid fa-store"></i>
+
+        </div>
+
+        <div>
+
+            <p class="font-bold text-sm text-slate-800">
+                Produk Lokal
+            </p>
+
+            <p class="text-xs text-slate-500 mt-0.5">
+                Dari pedagang Remboken
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ITEM -->
+    <div class="bg-white border border-slate-200
+               rounded-2xl p-4 md:p-5
+               flex items-center gap-3">
+
+        <div class="w-11 h-11 shrink-0 rounded-xl
+                   bg-blue-100 text-blue-700
+                   flex items-center justify-center">
+
+            <i class="fa-solid fa-credit-card"></i>
+
+        </div>
+
+        <div>
+
+            <p class="font-bold text-sm text-slate-800">
+                Pembayaran Aman
+            </p>
+
+            <p class="text-xs text-slate-500 mt-0.5">
+                Didukung Midtrans
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ITEM -->
+    <div class="bg-white border border-slate-200
+               rounded-2xl p-4 md:p-5
+               flex items-center gap-3">
+
+        <div class="w-11 h-11 shrink-0 rounded-xl
+                   bg-orange-100 text-orange-700
+                   flex items-center justify-center">
+
+            <i class="fa-solid fa-truck"></i>
+
+        </div>
+
+        <div>
+
+            <p class="font-bold text-sm text-slate-800">
+                Pengantaran
+            </p>
+
+            <p class="text-xs text-slate-500 mt-0.5">
+                Atau ambil di pasar
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ITEM -->
+    <div class="bg-white border border-slate-200
+               rounded-2xl p-4 md:p-5
+               flex items-center gap-3">
+
+        <div class="w-11 h-11 shrink-0 rounded-xl
+                   bg-purple-100 text-purple-700
+                   flex items-center justify-center">
+
+            <i class="fa-solid fa-shield-halved"></i>
+
+        </div>
+
+        <div>
+
+            <p class="font-bold text-sm text-slate-800">
+                Terorganisir
+            </p>
+
+            <p class="text-xs text-slate-500 mt-0.5">
+                Sistem transaksi digital
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     PRODUCT SECTION HEADER
+========================================================= -->
+<div class="flex flex-col sm:flex-row
+            sm:items-end sm:justify-between
+            gap-3 mb-5">
+
+    <div>
+
+        <div class="flex items-center gap-2">
+
+            <span class="w-1.5 h-7 rounded-full bg-teal-700">
+            </span>
+
+            <h2 class="text-2xl font-black text-slate-800">
+
+                Produk Terbaru
+
+            </h2>
+
+        </div>
+
+        <p class="text-sm text-slate-500 mt-1 ml-3.5">
+
+            Temukan produk pilihan dari pedagang Pasar Remboken.
+
+        </p>
+
+    </div>
+
+
+    <a href="{{ url_for('catalog') }}" class="inline-flex items-center
+               text-sm text-teal-700
+               font-bold hover:text-teal-800 transition">
+
+        Lihat semua
+
+        <i class="fa-solid fa-arrow-right ml-2"></i>
+
+    </a>
+
+</div>
+
+
+<!-- =========================================================
+     PRODUCT GRID
+========================================================= -->
+<div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
+
+
+    {% for p in products %}
+
+    <article class="product-card bg-white
+                   border border-slate-200
+                   rounded-2xl overflow-hidden
+                   hover:shadow-xl hover:-translate-y-1
+                   transition-all duration-300" data-product-name="{{ p.name|lower }}">
+
+
+        <!-- PRODUCT IMAGE -->
+        <div class="relative bg-slate-100">
+
+            {% if p.image %}
+
+            <img src="{{ url_for('static', filename='uploads/products/' + p.image) }}" alt="{{ p.name }}"
+                class="w-full h-40 md:h-48 object-cover">
+
+            {% else %}
+
+            <div class="h-40 md:h-48
+                               flex items-center justify-center
+                               bg-slate-100 text-slate-300">
+
+                <i class="fa-solid fa-image text-4xl"></i>
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- STOCK BADGE -->
+            {% if p.stock > 0 %}
+
+            <span class="absolute top-3 left-3
+                               bg-white/95 backdrop-blur-sm
+                               text-emerald-700
+                               text-[11px] font-bold
+                               px-2.5 py-1 rounded-lg
+                               shadow-sm">
+
+                <i class="fa-solid fa-circle-check mr-1"></i>
+
+                Tersedia
+
+            </span>
+
+            {% else %}
+
+            <span class="absolute top-3 left-3
+                               bg-red-500 text-white
+                               text-[11px] font-bold
+                               px-2.5 py-1 rounded-lg">
+
+                Stok Habis
+
+            </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- PRODUCT INFO -->
+        <div class="p-3.5 md:p-4">
+
+            <!-- STORE -->
+            <div class="flex items-center gap-1.5 text-[11px] text-slate-500 mb-2">
+
+                <i class="fa-solid fa-store text-teal-600"></i>
+
+                <span class="truncate">
+                    {{ p.seller.seller_profile.store_name
+                    if p.seller and p.seller.seller_profile and p.seller.seller_profile.store_name
+                    else p.seller.name if p.seller else 'Pedagang Pasar Remboken' }}
+                </span>
+
+            </div>
+
+
+            <!-- NAME -->
+            <h3 class="font-bold text-sm md:text-base
+                           text-slate-800
+                           line-clamp-2 min-h-[40px]">
+
+                {{ p.name }}
+
+            </h3>
+
+
+            <!-- RATING & SOLD -->
+            <div class="flex items-center gap-2 mt-2
+            text-xs text-slate-400">
+
+                <!-- RATING -->
+                <div class="flex items-center gap-1">
+
+                    <i class="fa-solid fa-star text-yellow-400"></i>
+
+                    {% if p.product_rating and p.product_rating > 0 %}
+
+                    <span class="text-slate-700 font-semibold">
+                        {{ '%.1f'|format(p.product_rating) }}
+                    </span>
+
+                    <span>
+                        / 5
+                    </span>
+
+                    {% else %}
+
+                    <span>
+                        Belum ada rating
+                    </span>
+
+                    {% endif %}
+
+                </div>
+
+                <!-- SEPARATOR -->
+                <span class="text-slate-300">
+                    •
+                </span>
+
+                <!-- TERJUAL -->
+                <span>
+
+                    <span class="font-semibold text-slate-700">
+                        {{ p.sold_count or 0 }}
+                    </span>
+
+                    terjual
+
+                </span>
+
+            </div>
+
+
+            <!-- PRICE -->
+            <p class="text-lg md:text-xl
+                           text-teal-700
+                           font-black mt-2">
+
+                {{ rupiah(p.price) }}
+
+            </p>
+
+
+            <!-- STOCK -->
+            <p class="text-xs text-slate-500 mt-1">
+
+                Stok tersedia:
+                <span class="font-semibold text-slate-700">
+                    {{ p.stock }}
+                </span>
+
+            </p>
+
+
+            <!-- BUTTONS -->
+            <div class="grid grid-cols-2 gap-2 mt-4">
+
+                <!-- DETAIL -->
+                <a href="{{ url_for('product_detail', pid=p.id) }}" class="flex items-center justify-center
+                               gap-1.5
+                               border border-slate-200
+                               text-slate-700
+                               hover:border-teal-600
+                               hover:text-teal-700
+                               rounded-xl py-2.5
+                               text-xs font-bold transition">
+
+                    <i class="fa-solid fa-eye"></i>
+
+                    Detail
+
+                </a>
+
+
+                <!-- CART -->
+                {% if p.stock > 0 %}
+
+                <form method="post" action="{{ url_for('cart_add', pid=p.id) }}">
+
+                    <button type="submit" class="w-full
+                                       bg-teal-700
+                                       hover:bg-teal-800
+                                       text-white
+                                       rounded-xl py-2.5
+                                       text-xs font-bold
+                                       transition">
+
+                        <i class="fa-solid fa-cart-plus mr-1"></i>
+
+                        Keranjang
+
+                    </button>
+
+                </form>
+
+                {% else %}
+
+                <button type="button" disabled class="w-full
+                                   bg-slate-200
+                                   text-slate-400
+                                   rounded-xl py-2.5
+                                   text-xs font-bold
+                                   cursor-not-allowed">
+
+                    Stok Habis
+
+                </button>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </article>
+
+
+    {% else %}
+
+    <!-- EMPTY STATE -->
+    <div class="col-span-full
+                   bg-white border border-slate-200
+                   rounded-3xl
+                   text-center py-16 px-5">
+
+        <div class="w-16 h-16 mx-auto
+                       rounded-2xl
+                       bg-slate-100
+                       text-slate-400
+                       flex items-center justify-center">
+
+            <i class="fa-solid fa-box-open text-2xl"></i>
+
+        </div>
+
+
+        <h3 class="font-bold text-lg
+                       text-slate-700 mt-4">
+
+            Belum ada produk
+
+        </h3>
+
+
+        <p class="text-sm text-slate-500
+                       mt-1">
+
+            Produk dari pedagang akan tampil di sini.
+
+        </p>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+
+<!-- =========================================================
+     MARKETPLACE INFORMATION
+========================================================= -->
+<section class="mt-12">
+
+    <div class="bg-white border border-slate-200
+               rounded-3xl p-6 md:p-8">
+
+        <div class="grid md:grid-cols-3 gap-6">
+
+
+            <!-- INFO -->
+            <div class="flex gap-4">
+
+                <div class="w-12 h-12 shrink-0
+                           rounded-xl
+                           bg-teal-100 text-teal-700
+                           flex items-center justify-center">
+
+                    <i class="fa-solid fa-bag-shopping"></i>
+
+                </div>
+
+                <div>
+
+                    <h3 class="font-bold text-slate-800">
+                        Pilih Produk
+                    </h3>
+
+                    <p class="text-sm text-slate-500
+                               leading-relaxed mt-1">
+
+                        Cari produk lokal yang Anda butuhkan
+                        dan masukkan ke keranjang.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- INFO -->
+            <div class="flex gap-4">
+
+                <div class="w-12 h-12 shrink-0
+                           rounded-xl
+                           bg-blue-100 text-blue-700
+                           flex items-center justify-center">
+
+                    <i class="fa-solid fa-credit-card"></i>
+
+                </div>
+
+                <div>
+
+                    <h3 class="font-bold text-slate-800">
+                        Bayar dengan Aman
+                    </h3>
+
+                    <p class="text-sm text-slate-500
+                               leading-relaxed mt-1">
+
+                        Selesaikan pembayaran menggunakan
+                        metode pembayaran yang tersedia.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- INFO -->
+            <div class="flex gap-4">
+
+                <div class="w-12 h-12 shrink-0
+                           rounded-xl
+                           bg-orange-100 text-orange-700
+                           flex items-center justify-center">
+
+                    <i class="fa-solid fa-truck-fast"></i>
+
+                </div>
+
+                <div>
+
+                    <h3 class="font-bold text-slate-800">
+                        Ambil atau Antar
+                    </h3>
+
+                    <p class="text-sm text-slate-500
+                               leading-relaxed mt-1">
+
+                        Pilih pengambilan langsung atau
+                        gunakan layanan pengantaran.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     CTA
+========================================================= -->
+<section class="mt-8 mb-2
+           rounded-3xl
+           bg-teal-50
+           border border-teal-100
+           p-6 md:p-8
+           flex flex-col md:flex-row
+           md:items-center md:justify-between
+           gap-5">
+
+    <div>
+
+        <div class="flex items-center gap-2
+                   text-teal-700
+                   font-bold text-sm">
+
+            <i class="fa-solid fa-heart"></i>
+
+            Dukung Pedagang Lokal
+
+        </div>
+
+        <h2 class="text-xl md:text-2xl
+                   font-black text-slate-800 mt-1">
+
+            Belanja dari Pasar Remboken.
+
+        </h2>
+
+        <p class="text-sm text-slate-500 mt-1">
+
+            Produk lokal, transaksi digital, dan dukungan
+            untuk UMKM setempat.
+
+        </p>
+
+    </div>
+
+
+    <a href="{{ url_for('catalog') }}" class="shrink-0
+               inline-flex items-center
+               justify-center
+               bg-teal-700
+               hover:bg-teal-800
+               text-white
+               px-5 py-3
+               rounded-xl
+               font-bold text-sm
+               transition">
+
+        Mulai Belanja
+
+        <i class="fa-solid fa-arrow-right ml-2"></i>
+
+    </a>
+
+</section>
+
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const searchInput = document.getElementById('productSearch');
+        const searchButton = document.getElementById('searchButton');
+        const productCards = document.querySelectorAll('.product-card');
+
+
+        function searchProducts() {
+
+            const keyword = searchInput.value
+                .toLowerCase()
+                .trim();
+
+
+            let visibleCount = 0;
+
+
+            productCards.forEach(function (card) {
+
+                const productName =
+                    card.dataset.productName || '';
+
+
+                if (
+                    keyword === '' ||
+                    productName.includes(keyword)
+                ) {
+
+                    card.classList.remove('hidden');
+
+                    visibleCount++;
+
+                } else {
+
+                    card.classList.add('hidden');
+
+                }
+
+            });
+
+        }
+
+
+        if (searchButton) {
+
+            searchButton.addEventListener(
+                'click',
+                searchProducts
+            );
+
+        }
+
+
+        if (searchInput) {
+
+            searchInput.addEventListener(
+                'keyup',
+                function (event) {
+
+                    if (event.key === 'Enter') {
+
+                        searchProducts();
+
+                    }
+
+                }
+            );
+
+
+            searchInput.addEventListener(
+                'input',
+                searchProducts
+            );
+
+        }
+
+    });
+
+</script>
+
+{% endblock %}

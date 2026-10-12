@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="min-h-[70vh] flex items-center justify-center py-8">
+
+    <div class="w-full max-w-md">
+
+        <!-- Header -->
+        <div class="text-center mb-6">
+
+            <div
+                class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-teal-100 text-teal-700 flex items-center justify-center shadow-sm">
+                <i class="fa-solid fa-store text-2xl"></i>
+            </div>
+
+            <h1 class="text-3xl font-black text-slate-900">
+                Selamat Datang
+            </h1>
+
+            <p class="text-slate-500 mt-2">
+                Masuk ke akun Pasar Remboken Anda.
+            </p>
+
+        </div>
+
+        <!-- Login Card -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 shadow-lg">
+
+            <div class="flex items-center gap-3 mb-6">
+
+                <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                </div>
+
+                <div>
+
+                    <h2 class="font-bold text-slate-900">
+                        Masuk ke Akun
+                    </h2>
+
+                    <p class="text-xs text-slate-500">
+                        Gunakan email atau nomor WhatsApp dan password Anda.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <form method="post" class="space-y-5">
+
+                <!-- Email atau Nomor WhatsApp -->
+                <div>
+
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+                        <i class="fa-solid fa-user text-teal-700 mr-1"></i>
+                        Email atau Nomor WhatsApp
+                    </label>
+
+                    <div class="relative">
+
+                        <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+
+                        <input required name="login" type="text" placeholder="Masukkan email atau nomor WhatsApp"
+                            autocomplete="username"
+                            class="w-full border border-slate-200 rounded-xl py-3 pl-11 pr-4 outline-none transition focus:border-teal-600 focus:ring-4 focus:ring-teal-100">
+
+                    </div>
+
+                </div>
+
+                <!-- Password -->
+                <div>
+
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+
+                        <i class="fa-solid fa-lock text-teal-700 mr-1"></i>
+
+                        Password
+
+                    </label>
+
+                    <div class="relative">
+
+                        <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+
+                        <input required id="password" name="password" type="password" placeholder="Masukkan password"
+                            autocomplete="current-password"
+                            class="w-full border border-slate-200 rounded-xl py-3 pl-11 pr-12 outline-none transition focus:border-teal-600 focus:ring-4 focus:ring-teal-100">
+
+                        <button type="button" id="togglePassword"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg text-slate-400 hover:text-teal-700 hover:bg-teal-50 transition"
+                            aria-label="Tampilkan password">
+
+                            <i id="passwordIcon" class="fa-solid fa-eye"></i>
+
+                        </button>
+
+                    </div>
+
+                    <!-- Lupa Password -->
+                    <div class="flex justify-end mt-2">
+
+                        <a href="{{ url_for('forgot_password') }}"
+                            class="text-sm font-semibold text-teal-700 hover:text-teal-800 hover:underline transition">
+
+                            Lupa Password?
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <!-- Button -->
+                <button type="submit"
+                    class="w-full bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white py-3.5 rounded-xl font-bold transition shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+
+                    <i class="fa-solid fa-right-to-bracket"></i>
+
+                    Masuk
+
+                </button>
+
+            </form>
+
+            <!-- Register -->
+            <div class="relative my-6">
+
+                <div class="absolute inset-0 flex items-center">
+
+                    <div class="w-full border-t border-slate-200"></div>
+
+                </div>
+
+                <div class="relative flex justify-center">
+
+                    <span class="bg-white px-3 text-xs text-slate-400">
+                        Belum memiliki akun?
+                    </span>
+
+                </div>
+
+            </div>
+
+            <a href="{{ url_for('register') }}"
+                class="w-full border border-teal-200 text-teal-700 hover:bg-teal-50 py-3 rounded-xl font-bold transition flex items-center justify-center gap-2">
+
+                <i class="fa-solid fa-user-plus"></i>
+
+                Daftar Sekarang
+
+            </a>
+
+        </div>
+
+        <!-- Information -->
+        <div class="mt-5 grid grid-cols-3 gap-3 text-center">
+
+            <div class="bg-white border border-slate-200 rounded-xl p-3">
+
+                <i class="fa-solid fa-shield-halved text-teal-700 mb-2"></i>
+
+                <p class="text-[11px] font-semibold text-slate-600">
+                    Aman
+                </p>
+
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-3">
+
+                <i class="fa-solid fa-bag-shopping text-teal-700 mb-2"></i>
+
+                <p class="text-[11px] font-semibold text-slate-600">
+                    Praktis
+                </p>
+
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-3">
+
+                <i class="fa-solid fa-store text-teal-700 mb-2"></i>
+
+                <p class="text-[11px] font-semibold text-slate-600">
+                    Lokal
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+
+    const togglePassword = document.getElementById('togglePassword');
+
+    const password = document.getElementById('password');
+
+    const passwordIcon = document.getElementById('passwordIcon');
+
+    if (togglePassword && password && passwordIcon) {
+
+        togglePassword.addEventListener('click', function () {
+
+            if (password.type === 'password') {
+
+                password.type = 'text';
+
+                passwordIcon.classList.remove('fa-eye');
+
+                passwordIcon.classList.add('fa-eye-slash');
+
+                togglePassword.setAttribute(
+                    'aria-label',
+                    'Sembunyikan password'
+                );
+
+            } else {
+
+                password.type = 'password';
+
+                passwordIcon.classList.remove('fa-eye-slash');
+
+                passwordIcon.classList.add('fa-eye');
+
+                togglePassword.setAttribute(
+                    'aria-label',
+                    'Tampilkan password'
+                );
+
+            }
+
+        });
+
+    }
+
+</script>
+
+{% endblock %}

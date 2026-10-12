@@ -1,0 +1,46 @@
+body {
+    background: #f5f7fb
+}
+
+.hero {
+    background: linear-gradient(135deg, #e8f1ff, #fff)
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 4px 18px #0000000d
+}
+
+.stat b {
+    font-size: 1.5rem;
+    color: #0d6efd
+}
+
+.card {
+    border: 0;
+    box-shadow: 0 4px 18px #0000000d
+}
+
+#map {
+    height: 380px;
+    border-radius: 12px
+}
+
+@media(max-width:576px) {
+    .hero {
+        padding: 2rem !important
+    }
+
+    .hero h1 {
+        font-size: 2rem
+    }
+
+    #map {
+        height: 300px
+    }
+}

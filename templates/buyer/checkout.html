@@ -1,0 +1,952 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{% if payment_page %}
+
+<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ client_key }}"></script>
+
+{% else %}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+{% endif %}
+
+{% endblock %}
+
+
+{% block content %}
+
+<h1 class="text-3xl font-black mb-6">
+    {{ 'Pembayaran Pesanan' if payment_page else 'Checkout' }}
+</h1>
+
+
+{% if payment_page %}
+
+<!-- =========================
+     HALAMAN PEMBAYARAN
+========================= -->
+
+<div class="max-w-xl mx-auto bg-white border rounded-2xl p-7 text-center">
+
+    <i class="fa-solid fa-credit-card text-5xl text-teal-700"></i>
+
+    <h2 class="text-xl font-black mt-4">
+        {{ order.order_number }}
+    </h2>
+
+    <p class="text-slate-500">
+        Total pembayaran
+    </p>
+
+    <p class="text-3xl font-black text-teal-700">
+        {{ rupiah(order.total) }}
+    </p>
+
+    {% if snap_token %}
+
+    <button id="pay" type="button" data-snap-token="{{ snap_token }}" data-orders-url="{{ url_for('orders') }}"
+        class="mt-6 bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-bold transition">
+
+        <i class="fa-solid fa-credit-card mr-2"></i>
+        Bayar Sekarang
+
+    </button>
+
+    {% else %}
+
+    <a href="{{ url_for('orders') }}"
+        class="inline-block mt-6 bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-xl transition">
+
+        <i class="fa-solid fa-list mr-2"></i>
+        Lihat Pesanan
+
+    </a>
+
+    {% endif %}
+
+</div>
+
+
+{% else %}
+
+<!-- =========================
+     CHECKOUT
+========================= -->
+
+
+<form method="post" class="grid lg:grid-cols-3 gap-6">
+
+    {% for item_id in selected_item_ids %}
+    <input
+        type="hidden"
+        name="items"
+        value="{{ item_id }}"
+    >
+    {% endfor %}
+
+
+    <!-- KOLOM KIRI -->
+
+    <div class="lg:col-span-2 space-y-5">
+
+        <!-- METODE PENGAMBILAN -->
+
+        <div class="bg-white border rounded-2xl p-5">
+
+            <h2 class="font-black mb-4">
+                <i class="fa-solid fa-truck mr-2 text-teal-700"></i>
+                Metode Pengambilan
+            </h2>
+
+            <!-- AMBIL DI PASAR -->
+
+            <label class="flex gap-3 p-4 border rounded-xl mb-3 cursor-pointer hover:border-teal-500 transition">
+
+                <input type="radio" name="delivery_method" value="pickup" checked onchange="toggleDelivery()">
+
+                <span>
+                    <b>Ambil di Pasar</b>
+                    <br>
+                    <small class="text-slate-500">
+                        Ambil pesanan langsung di Pasar Remboken.
+                    </small>
+                </span>
+
+            </label>
+
+            <!-- PENGANTARAN -->
+
+            <label class="flex gap-3 p-4 border rounded-xl cursor-pointer hover:border-teal-500 transition">
+
+                <input type="radio" name="delivery_method" value="delivery" onchange="toggleDelivery()">
+
+                <span>
+                    <b>Pengantaran</b>
+                    <br>
+                    <small class="text-slate-500">
+                        Pilih alamat tersimpan untuk mengisi alamat pengantaran.
+                    </small>
+                </span>
+
+            </label>
+
+        </div>
+
+
+        <!-- LOKASI PENGANTARAN -->
+
+        <div id="deliveryBox" class="hidden bg-white border rounded-2xl p-5">
+
+            <h2 class="font-black mb-3">
+                <i class="fa-solid fa-map-location-dot mr-2 text-teal-700"></i>
+                Lokasi Pengantaran
+            </h2>
+
+
+            <!-- PILIH ALAMAT TERSIMPAN -->
+
+            <label for="savedAddressSelect" class="block text-sm font-semibold mb-2">
+                Pilih Alamat Tersimpan
+            </label>
+
+            <select id="savedAddressSelect" name="saved_address_id"
+                class="w-full border rounded-xl p-3 mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+
+                <option value="">
+                    Pilih alamat pengantaran
+                </option>
+
+                {% for a in addresses %}
+
+                <option value="{{ a.id }}" data-address="{{ a.full_address }}" data-note="{{ a.address_note or '' }}"
+                    data-latitude="{{ a.latitude if a.latitude is not none else '' }}"
+                    data-longitude="{{ a.longitude if a.longitude is not none else '' }}"
+                    data-recipient-name="{{ a.recipient_name or '' }}"
+                    data-recipient-phone="{{ a.recipient_phone or '' }}"
+                    data-is-primary="{{ 'true' if a.is_primary else 'false' }}" {% if a.is_primary %}selected{% endif
+                    %}>
+
+                    {{ a.label }}{% if a.is_primary %} (Alamat Utama){% endif %} — {{ a.recipient_name }}
+
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+
+            {% if not addresses %}
+
+            <div class="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+
+                <i class="fa-solid fa-circle-info mr-1"></i>
+
+                Belum ada alamat tersimpan. Silakan isi alamat lengkap dan pilih lokasi pada peta.
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- INFORMASI PENERIMA ALAMAT UTAMA -->
+
+            <div id="recipientInfo" class="hidden rounded-xl bg-slate-50 border border-slate-200 p-3 mb-3">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+
+                    <p class="text-sm text-slate-600">
+                        <i class="fa-solid fa-user mr-1 text-teal-700"></i>
+                        Nama:
+                        <b id="recipientName" class="text-slate-800"></b>
+                    </p>
+
+                    <p class="text-sm text-slate-600">
+                        <i class="fa-solid fa-phone mr-1 text-teal-700"></i>
+                        Telepon:
+                        <b id="recipientPhone" class="text-slate-800"></b>
+                    </p>
+
+                </div>
+
+                <p id="addressNoteContainer" class="hidden text-sm text-slate-600 mt-2">
+                    <i class="fa-solid fa-note-sticky mr-1 text-teal-700"></i>
+                    Catatan:
+                    <b id="addressNote" class="text-slate-800"></b>
+                </p>
+
+            </div>
+
+
+            <!-- INFORMASI PENERIMA ALAMAT ALTERNATIF -->
+
+            <div id="alternateRecipientForm" class="hidden rounded-xl border border-teal-100 bg-teal-50 p-3 mb-3">
+
+                <div class="flex items-center gap-2 mb-3">
+                    <i class="fa-solid fa-user-pen text-teal-700"></i>
+
+                    <h3 class="font-bold text-sm text-slate-800">
+                        Informasi Penerima
+                    </h3>
+                </div>
+
+
+                <!-- NAMA DAN TELEPON -->
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                    <!-- NAMA PENERIMA -->
+
+                    <div>
+
+                        <label for="deliveryRecipientName" class="block text-xs font-semibold text-slate-700 mb-1.5">
+
+                            Nama Penerima
+                            <span class="text-red-500">*</span>
+
+                        </label>
+
+                        <input type="text" id="deliveryRecipientName" name="delivery_recipient_name" maxlength="100"
+                            autocomplete="name"
+                            class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                            placeholder="Nama penerima">
+
+                    </div>
+
+
+                    <!-- NOMOR TELEPON -->
+
+                    <div>
+
+                        <label for="deliveryRecipientPhone" class="block text-xs font-semibold text-slate-700 mb-1.5">
+
+                            Nomor Telepon
+                            <span class="text-red-500">*</span>
+
+                        </label>
+
+                        <input type="tel" id="deliveryRecipientPhone" name="delivery_recipient_phone" maxlength="20"
+                            autocomplete="tel"
+                            class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                            placeholder="08xxxxxxxxxx">
+
+                    </div>
+
+                </div>
+
+
+                <!-- CATATAN OPSIONAL -->
+
+                <div class="mt-3">
+
+                    <label for="deliveryNote" class="block text-xs font-semibold text-slate-700 mb-1.5">
+
+                        Catatan Pengantaran
+                        <span class="text-slate-400 font-normal">(Opsional)</span>
+
+                    </label>
+
+                    <input type="text" id="deliveryNote" name="delivery_note" maxlength="500"
+                        class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        placeholder="Contoh: Rumah pagar hitam, dekat toko">
+
+                </div>
+
+            </div>
+
+
+            <!-- ALAMAT LENGKAP -->
+
+            <label for="address" class="block text-sm font-semibold mb-2">
+                Alamat Lengkap
+            </label>
+
+            <textarea id="address" name="delivery_address" rows="2"
+                class="w-full border rounded-xl p-3 mb-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                placeholder="Pilih alamat tersimpan atau masukkan alamat lengkap"></textarea>
+
+
+            <!-- MAP -->
+
+            <div id="map" class="h-64 md:h-72 rounded-xl overflow-hidden border"></div>
+
+
+            <!-- KOORDINAT -->
+
+            <input type="hidden" id="latitude" name="latitude">
+
+            <input type="hidden" id="longitude" name="longitude">
+
+            <input type="hidden" id="distance_km" name="distance_km" value="0">
+
+
+            <!-- JARAK DAN ONGKIR -->
+
+            <div class="mt-3 flex flex-col sm:flex-row sm:justify-between gap-2 text-sm">
+
+                <span>
+                    <i class="fa-solid fa-route mr-1 text-teal-700"></i>
+                    Jarak:
+                    <b id="distanceText">0 km</b>
+                </span>
+
+                <span>
+                    <i class="fa-solid fa-money-bill-wave mr-1 text-teal-700"></i>
+                    Ongkir:
+                    <b id="feeText">
+                        {{ rupiah(config.DELIVERY_BASE_FEE) if config else 'Rp 5.000' }}
+                    </b>
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- INFORMASI PICKUP -->
+
+        <div id="pickupInfo" class="bg-teal-50 border border-teal-100 rounded-2xl p-5">
+
+            <b>
+                <i class="fa-solid fa-location-dot mr-2"></i>
+                Ambil di Pasar Remboken
+            </b>
+
+            <p class="text-sm text-slate-600 mt-1">
+                Pesanan dapat diambil setelah status siap diambil.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- RINGKASAN PESANAN -->
+
+    <div class="bg-white border rounded-2xl p-5 h-fit">
+
+        <h2 class="font-black mb-4">
+            <i class="fa-solid fa-receipt mr-2 text-teal-700"></i>
+            Ringkasan
+        </h2>
+
+        {% for i in items %}
+
+        <div class="flex justify-between gap-3 text-sm py-2">
+
+            <span>
+                {{ i.product.name }}
+                ×
+                {{ i.qty }}
+            </span>
+
+            <b class="whitespace-nowrap">
+                {{ rupiah(i.qty * i.product.price) }}
+            </b>
+
+        </div>
+
+        {% endfor %}
+
+
+        <!-- SUBTOTAL -->
+
+        <div class="border-t mt-3 pt-3 flex justify-between gap-3">
+
+            <span>Subtotal</span>
+
+            <b class="whitespace-nowrap">
+                {{ rupiah(subtotal) }}
+            </b>
+
+        </div>
+
+
+        <!-- ONGKIR -->
+
+        <div id="summaryDeliveryRow" class="border-t mt-3 pt-3 flex justify-between gap-3 hidden">
+
+            <span>Ongkir</span>
+
+            <b id="summaryDeliveryFee" class="whitespace-nowrap">
+                {{ rupiah(0) }}
+            </b>
+
+        </div>
+
+
+        <!-- TOTAL -->
+
+        <div class="border-t mt-3 pt-3 flex justify-between gap-3 text-lg">
+
+            <span class="font-bold">Total</span>
+
+            <b id="summaryTotal" class="text-teal-700 whitespace-nowrap" data-subtotal="{{ subtotal }}">
+
+                {{ rupiah(subtotal) }}
+
+            </b>
+
+        </div>
+
+
+        <!-- SUBMIT -->
+
+        <button type="submit"
+            class="w-full bg-teal-700 hover:bg-teal-800 text-white p-3 rounded-xl font-bold mt-5 transition">
+
+            <i class="fa-solid fa-cart-shopping mr-2"></i>
+            Buat Pesanan & Bayar
+
+        </button>
+
+    </div>
+
+</form>
+
+{% endif %}
+
+{% endblock %}
+
+
+{% block scripts %}
+
+{% if not payment_page %}
+
+<!-- LEAFLET -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+<!-- KONFIGURASI CHECKOUT -->
+
+<div id="checkoutConfig" class="hidden" data-market-lat="{{ config.MARKET_LAT }}"
+    data-market-lng="{{ config.MARKET_LNG }}" data-base-fee="{{ config.DELIVERY_BASE_FEE }}"
+    data-per-km="{{ config.DELIVERY_PER_KM }}">
+</div>
+
+
+<script>
+    const checkoutConfig = document.getElementById('checkoutConfig');
+
+    if (checkoutConfig) {
+        window.MARKET_LAT = parseFloat(checkoutConfig.dataset.marketLat);
+        window.MARKET_LNG = parseFloat(checkoutConfig.dataset.marketLng);
+        window.BASE_FEE = parseFloat(checkoutConfig.dataset.baseFee);
+        window.PER_KM = parseFloat(checkoutConfig.dataset.perKm);
+    }
+</script>
+
+
+<!-- CHECKOUT JAVASCRIPT -->
+
+<script src="{{ url_for('static', filename='js/checkout.js') }}"></script>
+
+
+<!-- ALAMAT, PENERIMA, DAN RINGKASAN ONGKIR -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const addressSelect = document.getElementById('savedAddressSelect');
+        const addressField = document.getElementById('address');
+
+        const latitudeField = document.getElementById('latitude');
+        const longitudeField = document.getElementById('longitude');
+
+        const recipientInfo = document.getElementById('recipientInfo');
+        const recipientName = document.getElementById('recipientName');
+        const recipientPhone = document.getElementById('recipientPhone');
+
+        const addressNoteContainer = document.getElementById('addressNoteContainer');
+        const addressNote = document.getElementById('addressNote');
+
+        const alternateRecipientForm = document.getElementById('alternateRecipientForm');
+        const deliveryRecipientName = document.getElementById('deliveryRecipientName');
+        const deliveryRecipientPhone = document.getElementById('deliveryRecipientPhone');
+        const deliveryNote = document.getElementById('deliveryNote');
+
+        const deliveryRadios = document.querySelectorAll(
+            'input[name="delivery_method"]'
+        );
+
+        const deliveryBox = document.getElementById('deliveryBox');
+        const pickupInfo = document.getElementById('pickupInfo');
+
+        const deliveryRow = document.getElementById('summaryDeliveryRow');
+        const feeText = document.getElementById('feeText');
+        const summaryFee = document.getElementById('summaryDeliveryFee');
+        const summaryTotal = document.getElementById('summaryTotal');
+
+        if (!summaryTotal) return;
+
+        const subtotal = Number(summaryTotal.dataset.subtotal) || 0;
+
+
+        function parseRupiah(text) {
+            return Number(String(text).replace(/[^\d]/g, '')) || 0;
+        }
+
+
+        function formatRupiah(amount) {
+            return 'Rp ' + Math.round(amount).toLocaleString('id-ID');
+        }
+
+
+        function isDeliverySelected() {
+            const selected = document.querySelector(
+                'input[name="delivery_method"]:checked'
+            );
+
+            return Boolean(selected && selected.value === 'delivery');
+        }
+
+
+
+        /*
+         * Mengisi data berdasarkan alamat yang dipilih.
+         */
+        function fillSavedAddress() {
+
+            if (!addressSelect || !addressField) return;
+
+            const option =
+                addressSelect.options[addressSelect.selectedIndex];
+
+            const isDelivery = isDeliverySelected();
+
+            /*
+             * PILIH ALAMAT PENGANTARAN BARU
+             */
+            if (!option || !option.value) {
+
+                // Aktifkan pemilihan lokasi baru melalui peta.
+                if (typeof window.setSavedAddressMode === 'function') {
+                    window.setSavedAddressMode(false, false);
+                }
+
+                addressField.value = '';
+
+                if (latitudeField) latitudeField.value = '';
+                if (longitudeField) longitudeField.value = '';
+
+                const distanceField = document.getElementById('distance_km');
+                const distanceText = document.getElementById('distanceText');
+                const feeText = document.getElementById('feeText');
+
+                if (distanceField) distanceField.value = '';
+                if (distanceText) distanceText.textContent = '-';
+                if (feeText) feeText.textContent = '-';
+
+                if (recipientInfo) {
+                    recipientInfo.classList.add('hidden');
+                }
+
+                if (addressNoteContainer) {
+                    addressNoteContainer.classList.add('hidden');
+                }
+
+                if (alternateRecipientForm) {
+                    alternateRecipientForm.classList.toggle(
+                        'hidden',
+                        !isDelivery
+                    );
+                }
+
+                if (deliveryRecipientName) {
+                    deliveryRecipientName.value = '';
+                    deliveryRecipientName.required = isDelivery;
+                }
+
+                if (deliveryRecipientPhone) {
+                    deliveryRecipientPhone.value = '';
+                    deliveryRecipientPhone.required = isDelivery;
+                }
+
+                if (deliveryNote) {
+                    deliveryNote.value = '';
+                }
+
+                return;
+            }
+
+            /*
+             * ISI ALAMAT DAN KOORDINAT TERSIMPAN
+             */
+            addressField.value = option.dataset.address || '';
+
+            const lat = parseFloat(option.dataset.latitude);
+            const lng = parseFloat(option.dataset.longitude);
+
+            const hasCoordinates =
+                Number.isFinite(lat) &&
+                Number.isFinite(lng);
+
+            if (latitudeField) {
+                latitudeField.value = hasCoordinates ? lat : '';
+            }
+
+            if (longitudeField) {
+                longitudeField.value = hasCoordinates ? lng : '';
+            }
+
+            /*
+             * TENTUKAN JENIS ALAMAT
+             */
+            const isPrimary =
+                option.dataset.isPrimary === 'true';
+
+            const hasSavedAddress =
+                Boolean(option.value);
+
+            const savedName =
+                option.dataset.recipientName || '';
+
+            const savedPhone =
+                option.dataset.recipientPhone || '';
+
+            const savedNote =
+                option.dataset.note || '';
+
+            /*
+             * KUNCI PETA UNTUK ALAMAT TERSIMPAN
+             */
+            if (typeof window.setSavedAddressMode === 'function') {
+                window.setSavedAddressMode(
+                    isPrimary,
+                    hasSavedAddress
+                );
+            }
+
+            /*
+             * INFORMASI ALAMAT UTAMA
+             */
+            if (recipientInfo) {
+                recipientInfo.classList.toggle(
+                    'hidden',
+                    !isPrimary || !isDelivery
+                );
+            }
+
+            if (recipientName) {
+                recipientName.textContent = savedName;
+            }
+
+            if (recipientPhone) {
+                recipientPhone.textContent = savedPhone;
+            }
+
+            if (addressNote) {
+                addressNote.textContent = savedNote;
+            }
+
+            if (addressNoteContainer) {
+                addressNoteContainer.classList.toggle(
+                    'hidden',
+                    !savedNote || !isPrimary || !isDelivery
+                );
+            }
+
+            /*
+             * INFORMASI ALAMAT ALTERNATIF
+             */
+            if (alternateRecipientForm) {
+                alternateRecipientForm.classList.toggle(
+                    'hidden',
+                    isPrimary || !isDelivery
+                );
+            }
+
+            if (deliveryRecipientName) {
+                deliveryRecipientName.value =
+                    isPrimary ? '' : savedName;
+
+                deliveryRecipientName.required =
+                    !isPrimary && isDelivery;
+            }
+
+            if (deliveryRecipientPhone) {
+                deliveryRecipientPhone.value =
+                    isPrimary ? '' : savedPhone;
+
+                deliveryRecipientPhone.required =
+                    !isPrimary && isDelivery;
+            }
+
+            if (deliveryNote) {
+                deliveryNote.value =
+                    isPrimary ? '' : savedNote;
+            }
+
+            /*
+             * PERBARUI LOKASI PETA
+             */
+            if (hasCoordinates) {
+
+                if (typeof window.setSavedPoint === 'function') {
+
+                    window.setSavedPoint(lat, lng);
+
+                } else if (typeof window.setPoint === 'function') {
+
+                    // Kompatibilitas jika checkout.js belum diperbarui.
+                    window.setPoint(lat, lng);
+
+                } else if (typeof window.initMap === 'function') {
+
+                    window.initMap(lat, lng);
+
+                }
+
+            } else if (typeof window.initMap === 'function') {
+
+                // Alamat tersimpan tanpa koordinat valid.
+                window.initMap(
+                    Number(window.MARKET_LAT),
+                    Number(window.MARKET_LNG)
+                );
+            }
+
+        }
+
+
+
+        /*
+         * Tampilkan bagian pengantaran atau pengambilan.
+         */
+        function updateDeliveryMethod() {
+
+            const isDelivery = isDeliverySelected();
+
+            if (deliveryBox) {
+                deliveryBox.classList.toggle('hidden', !isDelivery);
+            }
+
+            if (pickupInfo) {
+                pickupInfo.classList.toggle('hidden', isDelivery);
+            }
+
+            fillSavedAddress();
+
+            if (isDelivery) {
+
+                if (typeof window.toggleDelivery === 'function') {
+                    window.toggleDelivery();
+                }
+
+                if (
+                    window.map &&
+                    typeof window.map.invalidateSize === 'function'
+                ) {
+                    window.map.invalidateSize();
+                }
+
+            }
+
+            updateDeliveryDisplay();
+
+        }
+
+
+        /*
+         * Perbarui ongkir dan total.
+         */
+        function updateDeliveryDisplay() {
+
+            const isDelivery = isDeliverySelected();
+
+            const fee = isDelivery && feeText
+                ? parseRupiah(feeText.textContent)
+                : 0;
+
+            if (deliveryRow) {
+                deliveryRow.classList.toggle('hidden', !isDelivery);
+            }
+
+            if (summaryFee) {
+                summaryFee.textContent = formatRupiah(fee);
+            }
+
+            summaryTotal.textContent = formatRupiah(subtotal + fee);
+
+        }
+
+
+        // Perubahan alamat tersimpan.
+
+        if (addressSelect) {
+            addressSelect.addEventListener('change', fillSavedAddress);
+        }
+
+
+        // Perubahan metode pengambilan.
+
+        deliveryRadios.forEach(function (radio) {
+            radio.addEventListener('change', updateDeliveryMethod);
+        });
+
+
+        // Pantau perubahan ongkir dari checkout.js.
+
+        if (feeText) {
+
+            const observer = new MutationObserver(function () {
+                updateDeliveryDisplay();
+            });
+
+            observer.observe(feeText, {
+                childList: true,
+                characterData: true,
+                subtree: true
+            });
+
+        }
+
+
+        // Inisialisasi awal.
+
+        updateDeliveryMethod();
+
+    });
+</script>
+
+
+{% else %}
+
+
+{% if snap_token %}
+
+<!-- KONFIGURASI MIDTRANS -->
+
+<div id="paymentConfig" class="hidden" data-snap-token="{{ snap_token }}" data-orders-url="{{ url_for('orders') }}">
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const paymentConfig = document.getElementById('paymentConfig');
+        const payButton = document.getElementById('pay');
+
+        if (!paymentConfig || !payButton) return;
+
+        const snapToken = paymentConfig.dataset.snapToken;
+        const ordersUrl = paymentConfig.dataset.ordersUrl;
+
+        payButton.addEventListener('click', function () {
+
+            if (!snapToken) {
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Token pembayaran tidak tersedia.'
+                });
+
+                return;
+            }
+
+
+            snap.pay(snapToken, {
+
+                onSuccess: function () {
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Pembayaran Berhasil',
+                        text: 'Pembayaran berhasil diproses.',
+                        timer: 1800,
+                        showConfirmButton: false
+                    }).then(function () {
+                        window.location.href = ordersUrl;
+                    });
+
+                },
+
+                onPending: function () {
+
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Menunggu Pembayaran',
+                        text: 'Pembayaran masih menunggu konfirmasi.',
+                        timer: 1800,
+                        showConfirmButton: false
+                    }).then(function () {
+                        window.location.href = ordersUrl;
+                    });
+
+                },
+
+                onError: function () {
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Pembayaran gagal.'
+                    });
+
+                },
+
+                onClose: function () {
+
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Pembayaran Belum Selesai',
+                        text: 'Jendela pembayaran ditutup sebelum pembayaran selesai.'
+                    });
+
+                }
+
+            });
+
+        });
+
+    });
+</script>
+
+{% endif %}
+
+{% endif %}
+
+{% endblock %}

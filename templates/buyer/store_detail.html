@@ -1,0 +1,684 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="max-w-[1600px] mx-auto px-3 md:px-5 py-4 md:py-6">
+
+    <!-- TATA LETAK DUA KOLOM -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+        <!-- ================================================
+             KOLOM KIRI: PRODUK TOKO
+        ================================================= -->
+        <main class="min-w-0 lg:col-span-9">
+
+            <!-- PENCARIAN DAN FILTER -->
+            <section class="bg-white border border-slate-200 rounded-2xl p-4 mb-4 shadow-sm">
+
+                <div class="flex flex-col sm:flex-row gap-3">
+
+                    <div class="relative flex-1 min-w-0">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+
+                        <input
+                            type="search"
+                            id="storeSearch"
+                            placeholder="Cari produk di toko ini..."
+                            autocomplete="off"
+                            class="w-full pl-10 pr-10 py-3 rounded-xl border border-slate-200 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+
+                        <button
+                            type="button"
+                            id="clearSearch"
+                            aria-label="Hapus pencarian"
+                            class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        </button>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="toggleFilter"
+                        aria-expanded="false"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-200 text-slate-700 text-sm font-bold hover:bg-slate-50 transition">
+
+                        <i class="fa-solid fa-sliders"></i>
+                        Filter dan Urutkan
+                        <i id="filterArrow" class="fa-solid fa-chevron-down text-xs transition-transform"></i>
+                    </button>
+
+                </div>
+
+                <!-- FILTER TERSEMBUNYI SAMPAI DITEKAN -->
+                <div id="filterPanel" class="hidden border-t border-slate-100 mt-4 pt-4">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+                        <div>
+                            <label for="stockFilter" class="block text-xs font-bold text-slate-600 mb-1.5">
+                                Ketersediaan Stok
+                            </label>
+                            <select id="stockFilter" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500">
+                                <option value="all">Semua Produk</option>
+                                <option value="available">Stok Tersedia</option>
+                                <option value="empty">Stok Habis</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="categoryFilter" class="block text-xs font-bold text-slate-600 mb-1.5">
+                                Kategori Produk
+                            </label>
+                            <select id="categoryFilter" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500">
+                                <option value="all">Semua Kategori</option>
+                                {% for category in categories|default([], true) %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="priceFilter" class="block text-xs font-bold text-slate-600 mb-1.5">
+                                Urutkan Harga
+                            </label>
+                            <select id="priceFilter" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500">
+                                <option value="default">Urutan Awal</option>
+                                <option value="low">Harga Terendah</option>
+                                <option value="high">Harga Tertinggi</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="flex justify-end mt-3">
+                        <button type="button" id="resetFilter" class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-teal-700">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            Reset Pencarian dan Filter
+                        </button>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- HEADER PRODUK TOKO: DESAIN DIPERTAHANKAN -->
+            <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-4">
+                <div>
+                    <h2 class="text-xl md:text-2xl font-black text-slate-800">
+                        Produk Toko
+                    </h2>
+                    <p class="text-xs md:text-sm text-slate-500 mt-1">
+                        Temukan produk yang tersedia dari pedagang ini.
+                    </p>
+                </div>
+
+                <div class="text-xs text-slate-500">
+                    Menampilkan
+                    <span id="visibleCount" class="font-black text-teal-700">{{ products|length }}</span>
+                    dari
+                    <span id="productCount" class="font-black text-slate-700">{{ products|length }}</span>
+                    produk
+                </div>
+            </section>
+
+            <div class="mb-3">
+                <span id="filterStatus" class="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-[11px] text-slate-500">
+                    <i class="fa-solid fa-list"></i>
+                    Semua produk
+                </span>
+            </div>
+
+            <!-- GRID PRODUK: PERTAHANKAN KARTU PRODUK ANDA -->
+            <div id="productScrollArea" class="max-h-[calc(100vh-220px)] min-h-[300px] overflow-y-auto overflow-x-hidden pr-1 pb-2 overscroll-contain scroll-smooth">
+
+                <div id="products" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 xl:grid-cols-4 gap-3">
+
+                    {% for p in products %}
+
+                    <div
+                        data-cat="{{ p.category_id or '' }}"
+                        data-name="{{ p.name|lower }}"
+                        data-store="{{ (p.seller.seller_profile.store_name if p.seller.seller_profile else p.seller.name)|lower }}"
+                        data-price="{{ p.price }}"
+                        data-stock="{{ p.stock }}"
+                        data-rating="{{ p.product_rating|default(0, true) }}"
+                        data-index="{{ loop.index0 }}"
+                        class="product-card group bg-white border border-slate-200 rounded-xl overflow-hidden transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-slate-300">
+
+                        <!-- GAMBAR PRODUK -->
+                        <a href="{{ url_for('product_detail', pid=p.id) }}" class="block relative overflow-hidden bg-slate-100">
+
+                            {% if p.image %}
+                            <img
+                                src="{{ url_for('static', filename='uploads/products/' + p.image) }}"
+                                alt="{{ p.name }}"
+                                loading="lazy"
+                                class="w-full h-32 sm:h-36 md:h-40 object-cover transition duration-300 group-hover:scale-105">
+                            {% else %}
+                            <div class="w-full h-32 sm:h-36 md:h-40 bg-slate-100 flex items-center justify-center text-slate-300 text-3xl">
+                                <i class="fa-solid fa-image"></i>
+                            </div>
+                            {% endif %}
+
+                            <div class="absolute top-2 left-2 max-w-[80%]">
+                                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm shadow-sm text-[9px] font-bold text-slate-600">
+                                    <i class="fa-solid fa-tag text-teal-600"></i>
+                                    {{ p.category.name if p.category else 'Umum' }}
+                                </span>
+                            </div>
+
+                        </a>
+
+                        <!-- INFORMASI PRODUK -->
+                        <div class="p-3">
+
+                            <a href="{{ url_for('product_detail', pid=p.id) }}" class="block">
+                                <h3 class="font-black text-xs sm:text-sm text-slate-900 line-clamp-2 leading-snug hover:text-teal-700 transition">
+                                    {{ p.name }}
+                                </h3>
+                            </a>
+
+                            <p class="text-sm sm:text-base text-teal-700 font-black mt-1.5">
+                                {{ rupiah(p.price) }}
+                            </p>
+
+                            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-amber-400 text-[11px]">★</span>
+                                    <span class="text-[11px] font-bold text-slate-700">
+                                        {{ '%.1f'|format(p.product_rating|default(0, true)|float) }}
+                                    </span>
+                                    <span class="text-[10px] text-slate-400">rating</span>
+                                </div>
+
+                                <span class="text-slate-300 text-[10px]">•</span>
+
+                                <span class="text-[10px] text-slate-500">
+                                    <span class="font-bold text-slate-700">{{ p.sold_count|default(0, true) }}</span>
+                                    terjual
+                                </span>
+                            </div>
+
+                            <div class="flex items-center gap-1 mt-1.5 min-w-0">
+                                <i class="fa-solid fa-store text-[9px] text-slate-400 shrink-0"></i>
+                                <p class="text-[10px] text-slate-500 truncate">
+                                    {{ p.seller.seller_profile.store_name if p.seller.seller_profile else p.seller.name }}
+                                </p>
+                            </div>
+
+                            <div class="flex items-center justify-between gap-1 mt-1.5">
+                                <span class="inline-flex items-center gap-1 text-[10px] {% if p.stock > 0 %}text-slate-500{% else %}text-red-500{% endif %}">
+                                    {% if p.stock > 0 %}
+                                    <i class="fa-solid fa-box"></i> {{ p.stock }}
+                                    {% else %}
+                                    <i class="fa-solid fa-circle-xmark"></i> Habis
+                                    {% endif %}
+                                </span>
+
+                                <a href="{{ url_for('product_detail', pid=p.id) }}" class="text-[10px] font-bold text-teal-700 hover:text-teal-800">
+                                    Detail <i class="fa-solid fa-arrow-right ml-0.5"></i>
+                                </a>
+                            </div>
+
+                            {% if current_user.is_authenticated and current_user.role == 'buyer' %}
+                                {% if p.stock > 0 %}
+                                <form method="post" action="{{ url_for('cart_add', pid=p.id) }}" class="mt-2.5">
+                                    <div class="flex gap-1.5">
+                                        <input type="number" min="1" max="{{ p.stock }}" value="1" name="qty" required aria-label="Jumlah {{ p.name }}" class="w-12 sm:w-14 border border-slate-200 rounded-lg px-1 py-2 text-xs font-bold text-center outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+
+                                        <button type="submit" class="flex-1 inline-flex items-center justify-center gap-1 bg-teal-700 hover:bg-teal-800 text-white rounded-lg px-2 py-2 text-[10px] sm:text-xs font-bold transition">
+                                            <i class="fa-solid fa-cart-plus"></i>
+                                            <span>Tambah</span>
+                                        </button>
+                                    </div>
+                                </form>
+                                {% else %}
+                                <button type="button" disabled class="w-full mt-2.5 bg-slate-100 text-slate-400 rounded-lg p-2 text-[10px] sm:text-xs font-bold cursor-not-allowed">
+                                    Stok Habis
+                                </button>
+                                {% endif %}
+                            {% endif %}
+
+                        </div>
+                    </div>
+
+                    {% endfor %}
+
+                    <!-- HASIL PENCARIAN KOSONG -->
+                    <div id="emptyProducts" class="hidden col-span-full bg-white border border-slate-200 rounded-2xl p-10 text-center">
+                        <div class="w-14 h-14 mx-auto rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mb-3">
+                            <i class="fa-solid fa-box-open text-xl"></i>
+                        </div>
+                        <h3 class="font-black text-base text-slate-800">Produk tidak ditemukan</h3>
+                        <p class="text-xs text-slate-500 mt-1">Coba ubah kata pencarian atau filter Anda.</p>
+                        <button type="button" id="emptyResetFilter" class="mt-4 inline-flex items-center gap-2 text-xs font-bold text-teal-700 hover:text-teal-800">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            Reset pencarian dan filter
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+
+
+        <!-- ================================================
+             KOLOM KANAN: INFORMASI TOKO DAN ULASAN
+        ================================================= -->
+        <aside class="min-w-0 lg:col-span-3 lg:sticky lg:top-5 space-y-4">
+
+            <!-- INFORMASI TOKO -->
+            <section class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 shrink-0 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center">
+                        <i class="fa-solid fa-store text-lg"></i>
+                    </div>
+
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-teal-700">
+                            TOKO PEDAGANG
+                        </p>
+
+                        <h1 class="text-base font-black text-slate-800 mt-0.5 break-words">
+                            {{ seller_profile.store_name if seller_profile and seller_profile.store_name else seller.name }}
+                        </h1>
+                    </div>
+                </div>
+
+                {% if seller_profile and seller_profile.store_address %}
+                <p class="mt-3 text-xs leading-relaxed text-slate-500 break-words">
+                    <i class="fa-solid fa-location-dot text-teal-600 mr-1"></i>
+                    {{ seller_profile.store_address }}
+                </p>
+                {% endif %}
+
+                <div class="mt-4 grid grid-cols-2 gap-2">
+
+                    <div class="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                        <div class="flex items-center gap-1.5 text-amber-500">
+                            <i class="fa-solid fa-star"></i>
+                            <span class="text-lg font-black text-slate-800">
+                                {{ '%.1f'|format(seller_rating|default(0, true)|float) }}
+                            </span>
+                            <span class="text-[10px] text-slate-400">/5</span>
+                        </div>
+                        <p class="mt-1 text-[10px] text-slate-500">Rating toko</p>
+                    </div>
+
+                    <div class="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                        <p class="text-lg font-black text-slate-800">
+                            {{ seller_rating_count|default(0, true) }}
+                        </p>
+                        <p class="mt-1 text-[10px] text-slate-500">Penilaian</p>
+                    </div>
+
+                </div>
+
+                <a href="{{ url_for('catalog') }}" class="mt-3 flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 py-2.5 text-xs font-bold text-slate-600 transition hover:border-teal-600 hover:text-teal-700">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Kembali ke Katalog
+                </a>
+
+            </section>
+
+
+            <!-- RATING DAN ULASAN TOKO -->
+            <section class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+
+                <div class="flex items-start justify-between gap-2 mb-3">
+                    <div>
+                        <h2 class="text-sm font-black text-slate-800">
+                            <i class="fa-solid fa-star text-amber-400 mr-1"></i>
+                            Ulasan Toko
+                        </h2>
+                        <p class="text-[11px] text-slate-500 mt-1">
+                            Penilaian pelayanan pedagang.
+                        </p>
+                    </div>
+
+                    <span class="shrink-0 rounded-lg bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700">
+                        {{ seller_rating_count|default(0, true) }} ulasan
+                    </span>
+                </div>
+
+                {% if seller_reviews %}
+
+                <div id="sellerReviewList" class="space-y-2">
+
+                    {% for review, reviewer in seller_reviews %}
+
+                    <article class="seller-review-item rounded-xl border border-slate-100 bg-slate-50 p-3 {% if loop.index > 3 %}hidden{% endif %}">
+
+                        <div class="flex items-start justify-between gap-2">
+                            <p class="min-w-0 truncate text-xs font-bold text-slate-800">
+                                {{ reviewer.name if reviewer else 'Pembeli' }}
+                            </p>
+
+                            {% if review.created_at %}
+                            <span class="shrink-0 text-[9px] text-slate-400">
+                                {{ review.created_at.strftime('%d/%m/%Y') }}
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-1 flex items-center gap-0.5">
+                            {% for i in range(1, 6) %}
+                                {% if i <= review.seller_rating|int %}
+                                <i class="fa-solid fa-star text-amber-400 text-[10px]"></i>
+                                {% else %}
+                                <i class="fa-regular fa-star text-amber-400 text-[10px]"></i>
+                                {% endif %}
+                            {% endfor %}
+
+                            <span class="ml-1 text-[10px] font-bold text-slate-600">
+                                {{ '%.1f'|format(review.seller_rating|float) }}
+                            </span>
+                        </div>
+
+                        {% if review.comment %}
+                        <p class="seller-comment mt-2 text-xs leading-relaxed text-slate-600 whitespace-pre-line break-words">
+                            {{ review.comment }}
+                        </p>
+                        {% else %}
+                        <p class="mt-2 text-[10px] italic text-slate-400">
+                            Rating tanpa komentar.
+                        </p>
+                        {% endif %}
+
+                    </article>
+
+                    {% endfor %}
+
+                </div>
+
+                {% if seller_reviews|length > 3 %}
+                <button type="button" id="toggleSellerReviews" aria-expanded="false" class="mt-3 w-full rounded-lg border border-slate-200 py-2 text-xs font-bold text-teal-700 hover:bg-teal-50 transition">
+                    Lihat Semua Ulasan
+                    <i class="fa-solid fa-chevron-down ml-1"></i>
+                </button>
+                {% endif %}
+
+                {% else %}
+
+                <div class="rounded-xl border border-dashed border-slate-200 p-5 text-center">
+                    <i class="fa-regular fa-comment-dots text-2xl text-slate-300"></i>
+                    <p class="mt-2 text-xs font-bold text-slate-600">
+                        Belum Ada Ulasan
+                    </p>
+                    <p class="mt-1 text-[10px] leading-relaxed text-slate-400">
+                        Ulasan pembeli akan ditampilkan di sini.
+                    </p>
+                </div>
+
+                {% endif %}
+
+            </section>
+
+        </aside>
+
+    </div>
+</div>
+
+
+<style>
+    #productScrollArea {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+        scrollbar-gutter: stable;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #productScrollArea::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #productScrollArea::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 999px;
+    }
+
+    .product-card.hidden,
+    .seller-review-item.hidden {
+        display: none !important;
+    }
+
+    .seller-comment {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        overflow: hidden;
+        overflow-wrap: anywhere;
+    }
+
+    .seller-comment.expanded {
+        display: block;
+        -webkit-line-clamp: unset;
+        overflow: visible;
+    }
+
+    @media (max-width: 1023px) {
+        #productScrollArea {
+            max-height: none;
+            overflow: visible;
+        }
+    }
+</style>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.getElementById("storeSearch");
+    const clearSearch = document.getElementById("clearSearch");
+
+    const stockFilter = document.getElementById("stockFilter");
+    const categoryFilter = document.getElementById("categoryFilter");
+    const priceFilter = document.getElementById("priceFilter");
+
+    const toggleFilter = document.getElementById("toggleFilter");
+    const filterPanel = document.getElementById("filterPanel");
+    const filterArrow = document.getElementById("filterArrow");
+
+    const productGrid = document.getElementById("products");
+    const productCards = Array.from(
+        document.querySelectorAll("#products .product-card")
+    );
+
+    const productCount = document.getElementById("productCount");
+    const visibleCount = document.getElementById("visibleCount");
+    const filterStatus = document.getElementById("filterStatus");
+
+    const emptyProducts = document.getElementById("emptyProducts");
+    const resetFilter = document.getElementById("resetFilter");
+    const emptyResetFilter = document.getElementById("emptyResetFilter");
+
+    const reviewToggle = document.getElementById("toggleSellerReviews");
+
+    // BUKA DAN TUTUP FILTER
+    if (toggleFilter && filterPanel) {
+        toggleFilter.addEventListener("click", function () {
+            const open = filterPanel.classList.contains("hidden");
+
+            filterPanel.classList.toggle("hidden", !open);
+            toggleFilter.setAttribute("aria-expanded", String(open));
+
+            if (filterArrow) {
+                filterArrow.classList.toggle("rotate-180", open);
+            }
+        });
+    }
+
+    // ULASAN TOKO
+    if (reviewToggle) {
+        const reviews = Array.from(
+            document.querySelectorAll("#sellerReviewList .seller-review-item")
+        );
+
+        let expanded = false;
+
+        reviewToggle.addEventListener("click", function () {
+            expanded = !expanded;
+
+            reviews.forEach(function (review, index) {
+                if (index >= 3) {
+                    review.classList.toggle("hidden", !expanded);
+                }
+            });
+
+            reviewToggle.setAttribute("aria-expanded", String(expanded));
+
+            reviewToggle.innerHTML = expanded
+                ? 'Lihat Lebih Sedikit <i class="fa-solid fa-chevron-up ml-1"></i>'
+                : 'Lihat Semua Ulasan <i class="fa-solid fa-chevron-down ml-1"></i>';
+        });
+    }
+
+    if (!searchInput || !stockFilter || !categoryFilter ||
+        !priceFilter || !productGrid || !emptyProducts) {
+        return;
+    }
+
+    const originalOrder = new Map(
+        productCards.map(function (card, index) {
+            return [card, index];
+        })
+    );
+
+    if (productCount) {
+        productCount.textContent = productCards.length;
+    }
+
+    function applyFilters() {
+        const keyword = searchInput.value.trim().toLocaleLowerCase("id-ID");
+        const stockValue = stockFilter.value;
+        const categoryValue = categoryFilter.value;
+        const priceValue = priceFilter.value;
+
+        const visibleProducts = [];
+
+        productCards.forEach(function (card) {
+            const name = (card.dataset.name || "").toLocaleLowerCase("id-ID");
+            const stock = Number(card.dataset.stock || 0);
+            const category = String(card.dataset.cat || "");
+
+            const matchesName = name.includes(keyword);
+
+            const matchesStock =
+                stockValue === "all" ||
+                (stockValue === "available" && stock > 0) ||
+                (stockValue === "empty" && stock <= 0);
+
+            const matchesCategory =
+                categoryValue === "all" ||
+                category === categoryValue;
+
+            const visible = matchesName && matchesStock && matchesCategory;
+
+            card.classList.toggle("hidden", !visible);
+
+            if (visible) {
+                visibleProducts.push(card);
+            }
+        });
+
+        visibleProducts.sort(function (a, b) {
+            const priceA = Number(a.dataset.price || 0);
+            const priceB = Number(b.dataset.price || 0);
+
+            if (priceValue === "low") return priceA - priceB;
+            if (priceValue === "high") return priceB - priceA;
+
+            return originalOrder.get(a) - originalOrder.get(b);
+        });
+
+        visibleProducts.forEach(function (card) {
+            productGrid.appendChild(card);
+        });
+
+        // Pertahankan kartu tersembunyi setelah kartu yang tampil.
+        productCards
+            .filter(function (card) {
+                return card.classList.contains("hidden");
+            })
+            .sort(function (a, b) {
+                return originalOrder.get(a) - originalOrder.get(b);
+            })
+            .forEach(function (card) {
+                productGrid.appendChild(card);
+            });
+
+        // Empty state selalu berada di akhir grid.
+        productGrid.appendChild(emptyProducts);
+
+        if (visibleCount) {
+            visibleCount.textContent = visibleProducts.length;
+        }
+
+        emptyProducts.classList.toggle(
+            "hidden",
+            visibleProducts.length !== 0
+        );
+
+        if (clearSearch) {
+            clearSearch.classList.toggle("hidden", keyword.length === 0);
+        }
+
+        const labels = [];
+
+        if (keyword) labels.push("Pencarian aktif");
+
+        if (stockValue === "available") labels.push("Stok tersedia");
+        if (stockValue === "empty") labels.push("Stok habis");
+
+        if (categoryValue !== "all") {
+            const option = categoryFilter.options[categoryFilter.selectedIndex];
+            if (option) labels.push("Kategori: " + option.text);
+        }
+
+        if (priceValue === "low") labels.push("Harga terendah");
+        if (priceValue === "high") labels.push("Harga tertinggi");
+
+        if (filterStatus) {
+            filterStatus.innerHTML = labels.length
+                ? '<i class="fa-solid fa-filter"></i> ' + labels.join(" • ")
+                : '<i class="fa-solid fa-list"></i> Semua produk';
+        }
+    }
+
+    function resetAllFilters() {
+        searchInput.value = "";
+        stockFilter.value = "all";
+        categoryFilter.value = "all";
+        priceFilter.value = "default";
+
+        applyFilters();
+    }
+
+    searchInput.addEventListener("input", applyFilters);
+    stockFilter.addEventListener("change", applyFilters);
+    categoryFilter.addEventListener("change", applyFilters);
+    priceFilter.addEventListener("change", applyFilters);
+
+    if (clearSearch) {
+        clearSearch.addEventListener("click", function () {
+            searchInput.value = "";
+            searchInput.focus();
+            applyFilters();
+        });
+    }
+
+    if (resetFilter) {
+        resetFilter.addEventListener("click", resetAllFilters);
+    }
+
+    if (emptyResetFilter) {
+        emptyResetFilter.addEventListener("click", resetAllFilters);
+    }
+
+    applyFilters();
+});
+</script>
+
+{% endblock %}
+```

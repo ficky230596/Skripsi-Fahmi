@@ -1,0 +1,557 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto">
+
+    <!-- ======================================================
+         HEADER
+    ======================================================= -->
+    <div class="mb-7">
+
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+
+            <div>
+
+                <div class="flex items-center gap-2 mb-2">
+
+                    <span class="w-9 h-9 rounded-xl bg-teal-50 text-teal-700
+                                 flex items-center justify-center">
+
+                        <i class="fa-solid fa-store"></i>
+
+                    </span>
+
+                    <span class="text-xs font-bold uppercase tracking-wider text-teal-700">
+                        Area Pedagang
+                    </span>
+
+                </div>
+
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-900">
+                    Dashboard Pedagang
+                </h1>
+
+                <p class="text-sm sm:text-base text-slate-500 mt-1">
+
+                    {{ current_user.seller_profile.store_name
+                       if current_user.seller_profile
+                       else current_user.name }}
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         STATUS VERIFIKASI
+    ======================================================= -->
+    {% if not current_user.seller_profile
+          or current_user.seller_profile.verification_status != 'approved' %}
+
+        <div class="mb-6 rounded-2xl
+                    border border-amber-200
+                    bg-amber-50
+                    overflow-hidden">
+
+            <div class="p-4 sm:p-5">
+
+                <div class="flex items-start gap-3">
+
+                    <div class="w-10 h-10 shrink-0
+                                rounded-xl
+                                bg-amber-100
+                                text-amber-600
+                                flex items-center justify-center">
+
+                        <i class="fa-solid fa-clock"></i>
+
+                    </div>
+
+                    <div class="min-w-0">
+
+                        <div class="flex flex-wrap items-center gap-2">
+
+                            <h2 class="font-black text-amber-900">
+                                Verifikasi Pedagang
+                            </h2>
+
+                            <span class="inline-flex items-center
+                                         px-2.5 py-1
+                                         rounded-full
+                                         bg-amber-100
+                                         text-amber-700
+                                         text-[11px]
+                                         font-bold">
+
+                                {{ current_user.seller_profile.verification_status
+                                   if current_user.seller_profile
+                                   else 'belum lengkap' }}
+
+                            </span>
+
+                        </div>
+
+                        <p class="text-sm text-amber-800 mt-1 leading-6">
+
+                            Produk hanya dapat dikelola setelah admin
+                            menyetujui data pedagang dan KTP.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- ======================================================
+         STATISTIK
+    ======================================================= -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+
+        <!-- PRODUK -->
+        <div class="bg-white border border-slate-200
+                    rounded-2xl p-4 sm:p-5
+                    shadow-sm">
+
+            <div class="flex items-start justify-between gap-3">
+
+                <div>
+
+                    <p class="text-xs sm:text-sm
+                              font-medium text-slate-500">
+                        Produk
+                    </p>
+
+                    <p class="text-2xl sm:text-3xl
+                              font-black text-slate-900 mt-1">
+                        {{ products|length }}
+                    </p>
+
+                </div>
+
+                <div class="w-10 h-10 sm:w-11 sm:h-11
+                            rounded-xl
+                            bg-teal-50
+                            text-teal-700
+                            flex items-center justify-center">
+
+                    <i class="fa-solid fa-box"></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PESANAN -->
+        <div class="bg-white border border-slate-200
+                    rounded-2xl p-4 sm:p-5
+                    shadow-sm">
+
+            <div class="flex items-start justify-between gap-3">
+
+                <div>
+
+                    <p class="text-xs sm:text-sm
+                              font-medium text-slate-500">
+                        Pesanan
+                    </p>
+
+                    <p class="text-2xl sm:text-3xl
+                              font-black text-slate-900 mt-1">
+                        {{ orders|length }}
+                    </p>
+
+                </div>
+
+                <div class="w-10 h-10 sm:w-11 sm:h-11
+                            rounded-xl
+                            bg-blue-50
+                            text-blue-600
+                            flex items-center justify-center">
+
+                    <i class="fa-solid fa-receipt"></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SALDO -->
+        <div class="bg-white border border-slate-200
+                    rounded-2xl p-4 sm:p-5
+                    shadow-sm">
+
+            <div class="flex items-start justify-between gap-3">
+
+                <div class="min-w-0">
+
+                    <p class="text-xs sm:text-sm
+                              font-medium text-slate-500">
+                        Saldo tersedia
+                    </p>
+
+                    <p class="text-lg sm:text-xl
+                              font-black text-slate-900
+                              mt-1 truncate">
+
+                        {{ rupiah(balance.available_balance) }}
+
+                    </p>
+
+                </div>
+
+                <div class="w-10 h-10 sm:w-11 sm:h-11
+                            shrink-0
+                            rounded-xl
+                            bg-emerald-50
+                            text-emerald-600
+                            flex items-center justify-center">
+
+                    <i class="fa-solid fa-wallet"></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- TOTAL DIPEROLEH -->
+        <div class="bg-white border border-slate-200
+                    rounded-2xl p-4 sm:p-5
+                    shadow-sm">
+
+            <div class="flex items-start justify-between gap-3">
+
+                <div class="min-w-0">
+
+                    <p class="text-xs sm:text-sm
+                              font-medium text-slate-500">
+                        Total diperoleh
+                    </p>
+
+                    <p class="text-lg sm:text-xl
+                              font-black text-slate-900
+                              mt-1 truncate">
+
+                        {{ rupiah(balance.total_earned) }}
+
+                    </p>
+
+                </div>
+
+                <div class="w-10 h-10 sm:w-11 sm:h-11
+                            shrink-0
+                            rounded-xl
+                            bg-violet-50
+                            text-violet-600
+                            flex items-center justify-center">
+
+                    <i class="fa-solid fa-chart-line"></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         PESANAN TERBARU
+    ======================================================= -->
+    <div class="mt-6 sm:mt-7
+                bg-white
+                border border-slate-200
+                rounded-2xl
+                shadow-sm
+                overflow-hidden">
+
+        <!-- HEADER -->
+        <div class="px-5 sm:px-6 py-5
+                    border-b border-slate-200">
+
+            <div class="flex items-center justify-between gap-4">
+
+                <div>
+
+                    <h2 class="font-black text-slate-900 text-lg">
+                        Pesanan Terbaru
+                    </h2>
+
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                        Pantau pesanan terbaru dari pembeli.
+                    </p>
+
+                </div>
+
+                <a
+                    href="{{ url_for('seller_orders') }}"
+                    class="inline-flex items-center gap-2
+                           text-sm
+                           text-teal-700
+                           hover:text-teal-800
+                           font-bold
+                           whitespace-nowrap
+                           transition"
+                >
+
+                    <span class="hidden sm:inline">
+                        Lihat semua
+                    </span>
+
+                    <i class="fa-solid fa-arrow-right"></i>
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- DAFTAR PESANAN -->
+        {% if orders %}
+
+            <div class="divide-y divide-slate-100">
+
+                {% for o in orders %}
+
+                    <div class="px-5 sm:px-6 py-4
+                                hover:bg-slate-50
+                                transition">
+
+                        <div class="flex items-center
+                                    justify-between
+                                    gap-4">
+
+                            <!-- ORDER NUMBER -->
+                            <div class="flex items-center gap-3 min-w-0">
+
+                                <div class="w-10 h-10 shrink-0
+                                            rounded-xl
+                                            bg-slate-100
+                                            text-slate-600
+                                            flex items-center justify-center">
+
+                                    <i class="fa-solid fa-receipt text-sm"></i>
+
+                                </div>
+
+                                <div class="min-w-0">
+
+                                    <p class="font-bold
+                                              text-slate-800
+                                              text-sm
+                                              truncate">
+
+                                        {{ o.order_number }}
+
+                                    </p>
+
+                                    <p class="text-xs text-slate-400 mt-0.5">
+
+                                        Pesanan pembeli
+
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- STATUS -->
+                            <div class="shrink-0">
+
+                                {% if o.order_status == 'Selesai' %}
+
+                                    <span class="inline-flex items-center gap-1.5
+                                                 px-2.5 py-1.5
+                                                 rounded-lg
+                                                 bg-emerald-50
+                                                 text-emerald-700
+                                                 text-[11px] sm:text-xs
+                                                 font-bold">
+
+                                        <i class="fa-solid fa-circle-check"></i>
+
+                                        {{ o.order_status }}
+
+                                    </span>
+
+                                {% elif o.order_status == 'Dibatalkan' %}
+
+                                    <span class="inline-flex items-center gap-1.5
+                                                 px-2.5 py-1.5
+                                                 rounded-lg
+                                                 bg-red-50
+                                                 text-red-700
+                                                 text-[11px] sm:text-xs
+                                                 font-bold">
+
+                                        <i class="fa-solid fa-circle-xmark"></i>
+
+                                        {{ o.order_status }}
+
+                                    </span>
+
+                                {% elif o.order_status == 'Dalam Pengantaran' %}
+
+                                    <span class="inline-flex items-center gap-1.5
+                                                 px-2.5 py-1.5
+                                                 rounded-lg
+                                                 bg-blue-50
+                                                 text-blue-700
+                                                 text-[11px] sm:text-xs
+                                                 font-bold">
+
+                                        <i class="fa-solid fa-truck"></i>
+
+                                        <span class="hidden sm:inline">
+                                            {{ o.order_status }}
+                                        </span>
+
+                                        <span class="sm:hidden">
+                                            Pengantaran
+                                        </span>
+
+                                    </span>
+
+                                {% elif o.order_status == 'Siap Diambil' %}
+
+                                    <span class="inline-flex items-center gap-1.5
+                                                 px-2.5 py-1.5
+                                                 rounded-lg
+                                                 bg-teal-50
+                                                 text-teal-700
+                                                 text-[11px] sm:text-xs
+                                                 font-bold">
+
+                                        <i class="fa-solid fa-box"></i>
+
+                                        <span class="hidden sm:inline">
+                                            {{ o.order_status }}
+                                        </span>
+
+                                        <span class="sm:hidden">
+                                            Siap Diambil
+                                        </span>
+
+                                    </span>
+
+                                {% elif o.order_status == 'Menunggu Pembayaran' %}
+
+                                    <span class="inline-flex items-center gap-1.5
+                                                 px-2.5 py-1.5
+                                                 rounded-lg
+                                                 bg-amber-50
+                                                 text-amber-700
+                                                 text-[11px] sm:text-xs
+                                                 font-bold">
+
+                                        <i class="fa-solid fa-clock"></i>
+
+                                        <span class="hidden sm:inline">
+                                            {{ o.order_status }}
+                                        </span>
+
+                                        <span class="sm:hidden">
+                                            Pembayaran
+                                        </span>
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="inline-flex items-center gap-1.5
+                                                 px-2.5 py-1.5
+                                                 rounded-lg
+                                                 bg-slate-100
+                                                 text-slate-600
+                                                 text-[11px] sm:text-xs
+                                                 font-bold">
+
+                                        {{ o.order_status }}
+
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <!-- EMPTY STATE -->
+            <div class="px-6 py-12 text-center">
+
+                <div class="w-16 h-16 mx-auto
+                            rounded-2xl
+                            bg-slate-100
+                            text-slate-400
+                            flex items-center justify-center">
+
+                    <i class="fa-solid fa-receipt text-2xl"></i>
+
+                </div>
+
+                <h3 class="mt-4 font-black text-slate-700">
+                    Belum ada pesanan
+                </h3>
+
+                <p class="text-sm text-slate-400 mt-1">
+                    Pesanan dari pembeli akan muncul di sini.
+                </p>
+
+                <a
+                    href="{{ url_for('seller_orders') }}"
+                    class="inline-flex items-center gap-2
+                           mt-5
+                           px-4 py-2.5
+                           rounded-xl
+                           bg-teal-600
+                           hover:bg-teal-700
+                           text-white
+                           text-sm
+                           font-bold
+                           transition"
+                >
+
+                    <i class="fa-solid fa-list"></i>
+
+                    Lihat Pesanan
+
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

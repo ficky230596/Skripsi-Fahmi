@@ -1,0 +1,1884 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- ==================================================
+     BREADCRUMB
+=================================================== -->
+<div class="mb-6">
+
+    <div class="flex items-center gap-2 text-sm text-slate-500">
+
+        <a href="{{ url_for('catalog') }}" class="hover:text-teal-700 transition">
+
+            <i class="fa-solid fa-store mr-1"></i>
+
+            Katalog
+
+        </a>
+
+        <i class="fa-solid fa-chevron-right text-xs"></i>
+
+        <span class="text-slate-700 font-semibold">
+            Detail Produk
+        </span>
+
+    </div>
+
+</div>
+
+
+<!-- ==================================================
+     PRODUCT DETAIL
+=================================================== -->
+<section class="bg-white border border-slate-200
+           rounded-3xl overflow-hidden shadow-sm">
+
+    <div class="grid lg:grid-cols-2">
+
+
+        <!-- ==================================================
+             GAMBAR PRODUK - SLIDER
+        =================================================== -->
+        <div class="bg-slate-50 p-4 sm:p-6 lg:p-8">
+
+            <div class="relative">
+
+                <!-- MAIN IMAGE -->
+                <div id="productImageSlider" class="relative w-full aspect-square
+                           rounded-2xl overflow-hidden
+                           bg-white border border-slate-200
+                           select-none">
+
+                    {% if product.images %}
+
+                    {% for image in product.images %}
+
+                    <div class="product-slide absolute inset-0
+                                       transition-opacity duration-300
+                                       {% if not loop.first %}
+                                           opacity-0 pointer-events-none
+                                       {% else %}
+                                           opacity-100
+                                       {% endif %}" data-index="{{ loop.index0 }}">
+
+                        <img src="{{ url_for(
+                                        'static',
+                                        filename='uploads/products/' ~ image.image
+                                    ) }}" alt="{{ product.name }} - Foto {{ loop.index }}"
+                            class="w-full h-full object-cover" draggable="false">
+
+                    </div>
+
+                    {% endfor %}
+
+                    {% elif product.image %}
+
+                    <div class="product-slide absolute inset-0
+                                   opacity-100" data-index="0">
+
+                        <img src="{{ url_for(
+                                    'static',
+                                    filename='uploads/products/' ~ product.image
+                                ) }}" alt="{{ product.name }}" class="w-full h-full object-cover" draggable="false">
+
+                    </div>
+
+                    {% else %}
+
+                    <div class="absolute inset-0
+                                   flex flex-col
+                                   items-center
+                                   justify-center
+                                   text-slate-400">
+
+                        <div class="w-20 h-20 rounded-2xl
+                                       bg-slate-100
+                                       flex items-center
+                                       justify-center
+                                       mb-4">
+
+                            <i class="fa-solid fa-image text-3xl"></i>
+
+                        </div>
+
+                        <p class="text-sm font-semibold">
+                            Tidak ada foto produk
+                        </p>
+
+                    </div>
+
+                    {% endif %}
+
+
+                    <!-- PREVIOUS BUTTON -->
+                    {% if product.images|length > 1 %}
+
+                    <button type="button" id="prevProductImage" aria-label="Foto sebelumnya" class="absolute left-3 sm:left-4
+                                   top-1/2 -translate-y-1/2
+                                   w-10 h-10 sm:w-11 sm:h-11
+                                   rounded-full
+                                   bg-black/50
+                                   hover:bg-black/70
+                                   text-white
+                                   flex items-center
+                                   justify-center
+                                   shadow-lg
+                                   backdrop-blur-sm
+                                   transition
+                                   z-20">
+
+                        <i class="fa-solid fa-chevron-left"></i>
+
+                    </button>
+
+
+                    <!-- NEXT BUTTON -->
+                    <button type="button" id="nextProductImage" aria-label="Foto berikutnya" class="absolute right-3 sm:right-4
+                                   top-1/2 -translate-y-1/2
+                                   w-10 h-10 sm:w-11 sm:h-11
+                                   rounded-full
+                                   bg-black/50
+                                   hover:bg-black/70
+                                   text-white
+                                   flex items-center
+                                   justify-center
+                                   shadow-lg
+                                   backdrop-blur-sm
+                                   transition
+                                   z-20">
+
+                        <i class="fa-solid fa-chevron-right"></i>
+
+                    </button>
+
+                    {% endif %}
+
+
+                    <!-- PHOTO COUNTER -->
+                    {% if product.images|length > 1 %}
+
+                    <div id="productImageCounter" class="absolute
+                                   bottom-3 right-3
+                                   bg-black/60
+                                   backdrop-blur-sm
+                                   text-white
+                                   text-xs
+                                   font-bold
+                                   px-3 py-1.5
+                                   rounded-lg
+                                   z-20">
+
+                        1 / {{ product.images|length }}
+
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- ==================================================
+                     THUMBNAILS
+                =================================================== -->
+                {% if product.images|length > 1 %}
+
+                <div id="productThumbnails" class="grid grid-cols-5
+                               gap-2 sm:gap-3
+                               mt-3">
+
+                    {% for image in product.images %}
+
+                    <button type="button" class="product-thumbnail
+                                       relative
+                                       aspect-square
+                                       rounded-xl
+                                       overflow-hidden
+                                       border-2
+                                       {% if loop.first %}
+                                           border-teal-600
+                                       {% else %}
+                                           border-transparent
+                                       {% endif %}
+                                       bg-white
+                                       transition
+                                       hover:border-teal-400" data-index="{{ loop.index0 }}"
+                        aria-label="Lihat foto {{ loop.index }}">
+
+                        <img src="{{ url_for(
+                                        'static',
+                                        filename='uploads/products/' ~ image.image
+                                    ) }}" alt="Thumbnail {{ loop.index }}" class="w-full h-full object-cover"
+                            draggable="false">
+
+                    </button>
+
+                    {% endfor %}
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             PRODUCT INFORMATION
+        =================================================== -->
+        <div class="p-5 sm:p-7 lg:p-10">
+
+
+            <!-- CATEGORY -->
+            {% if product.category %}
+            <div class="mb-3">
+                <span class="inline-flex items-center
+                   gap-2
+                   bg-teal-50
+                   text-teal-700
+                   border border-teal-100
+                   px-3 py-1.5
+                   rounded-lg
+                   text-xs
+                   font-bold">
+
+                    <i class="fa-solid fa-tag"></i>
+
+                    {{ product.category.name }}
+
+                </span>
+            </div>
+            {% endif %}
+
+
+            <!-- PRODUCT NAME -->
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl
+                       font-black
+                       text-slate-800
+                       leading-tight">
+
+                {{ product.name }}
+
+            </h1>
+
+
+
+            <!-- RATING & SOLD -->
+            <div class="flex flex-wrap items-center gap-2 mt-3">
+
+                {% if product_rating_count > 0 %}
+
+                <!-- RATING -->
+                <div class="flex items-center gap-0.5 text-yellow-500">
+
+                    {% for i in range(5) %}
+
+                    {% if i < product_rating|round(0, 'floor' ) %} <i class="fa-solid fa-star"></i>
+
+                        {% else %}
+
+                        <i class="fa-regular fa-star"></i>
+
+                        {% endif %}
+
+                        {% endfor %}
+
+                </div>
+
+                <span class="text-sm font-semibold text-slate-700">
+
+                    {{ "%.1f"|format(product_rating) }}
+
+                </span>
+
+                <span class="text-sm text-slate-400">
+
+                    ({{ product_rating_count }} ulasan)
+
+                </span>
+
+                {% else %}
+
+                <!-- BELUM ADA RATING -->
+                <div class="flex items-center gap-1 text-slate-400">
+
+                    <i class="fa-regular fa-star text-yellow-500"></i>
+
+                    <span class="text-sm">
+                        Belum ada rating
+                    </span>
+
+                </div>
+
+                {% endif %}
+
+
+                <!-- SEPARATOR -->
+                <span class="text-slate-300">
+                    •
+                </span>
+
+
+                <!-- JUMLAH TERJUAL -->
+                <span class="text-sm text-slate-500">
+
+                    <span class="font-semibold text-slate-700">
+                        {{ sold_count or 0 }}
+                    </span>
+
+                    terjual
+
+                </span>
+
+            </div>
+
+
+
+
+            <!-- PRICE -->
+            <div class="mt-6">
+
+                <p class="text-3xl sm:text-4xl
+                           font-black
+                           text-teal-700">
+
+                    {{ rupiah(product.price) }}
+
+                </p>
+
+            </div>
+
+
+            <!-- STOCK -->
+            <div class="mt-4">
+
+                {% if product.stock > 0 %}
+
+                <div class="inline-flex items-center
+                               gap-2
+                               text-emerald-700
+                               bg-emerald-50
+                               border border-emerald-100
+                               px-3 py-2
+                               rounded-xl
+                               text-sm
+                               font-bold">
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                    Stok tersedia:
+                    {{ product.stock }}
+
+                </div>
+
+                {% else %}
+
+                <div class="inline-flex items-center
+                               gap-2
+                               text-red-700
+                               bg-red-50
+                               border border-red-100
+                               px-3 py-2
+                               rounded-xl
+                               text-sm
+                               font-bold">
+
+                    <i class="fa-solid fa-circle-xmark"></i>
+
+                    Stok habis
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- DESCRIPTION -->
+            <div class="mt-7">
+
+                <h2 class="font-black
+                           text-lg
+                           text-slate-800
+                           mb-2">
+
+                    Deskripsi Produk
+
+                </h2>
+
+                <div class="text-sm
+                           text-slate-600
+                           leading-relaxed
+                           whitespace-pre-line">
+
+                    {{ product.description or 'Tidak ada deskripsi produk.' }}
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 BUYER CART
+            =================================================== -->
+            {% if current_user.is_authenticated
+            and current_user.role == 'buyer'
+            and product.stock > 0 %}
+
+            <form method="post" action="{{ url_for('cart_add', pid=product.id) }}" class="mt-8">
+
+                <div class="flex flex-col sm:flex-row gap-3">
+
+
+                    <!-- QUANTITY -->
+                    <div class="flex items-center
+                                   border border-slate-200
+                                   rounded-xl
+                                   overflow-hidden
+                                   bg-white">
+
+                        <button type="button" id="decreaseQty" class="w-11 h-12
+                                       flex items-center
+                                       justify-center
+                                       text-slate-600
+                                       hover:bg-slate-100
+                                       transition">
+
+                            <i class="fa-solid fa-minus"></i>
+
+                        </button>
+
+
+                        <input type="number" name="qty" id="quantity" value="1" min="1" max="{{ product.stock }}" class="w-16 h-12
+                                       text-center
+                                       border-x
+                                       border-slate-200
+                                       focus:outline-none
+                                       font-bold
+                                       text-slate-800">
+
+
+                        <button type="button" id="increaseQty" class="w-11 h-12
+                                       flex items-center
+                                       justify-center
+                                       text-slate-600
+                                       hover:bg-slate-100
+                                       transition">
+
+                            <i class="fa-solid fa-plus"></i>
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- ADD TO CART -->
+                    <button type="submit" class="flex-1
+                                   inline-flex
+                                   items-center
+                                   justify-center
+                                   gap-2
+                                   bg-teal-700
+                                   hover:bg-teal-800
+                                   text-white
+                                   rounded-xl
+                                   px-5 py-3
+                                   font-bold
+                                   transition
+                                   shadow-sm">
+
+                        <i class="fa-solid fa-cart-plus"></i>
+
+                        Tambah ke Keranjang
+
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            {% elif not current_user.is_authenticated %}
+
+            <div class="mt-8
+                           p-4
+                           rounded-xl
+                           bg-slate-50
+                           border border-slate-200">
+
+                <p class="text-sm
+                               text-slate-600
+                               mb-3">
+
+                    Silakan login sebagai pembeli
+                    untuk membeli produk.
+
+                </p>
+
+                <a href="{{ url_for('login') }}" class="inline-flex
+                               items-center
+                               justify-center
+                               gap-2
+                               bg-teal-700
+                               hover:bg-teal-800
+                               text-white
+                               px-5 py-3
+                               rounded-xl
+                               font-bold
+                               text-sm
+                               transition">
+
+                    <i class="fa-solid fa-right-to-bracket"></i>
+
+                    Login
+
+                </a>
+
+            </div>
+
+
+            {% elif current_user.role != 'buyer' %}
+
+            <div class="mt-8
+                           p-4
+                           rounded-xl
+                           bg-slate-50
+                           border border-slate-200">
+
+                <p class="text-sm text-slate-500">
+
+                    Produk ini dapat dibeli oleh akun pembeli.
+
+                </p>
+
+            </div>
+
+
+            {% else %}
+
+            <div class="mt-8
+                           p-4
+                           rounded-xl
+                           bg-red-50
+                           border border-red-100">
+
+                <p class="text-sm
+                               text-red-700
+                               font-semibold">
+
+                    Produk sedang tidak tersedia karena
+                    stok telah habis.
+
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     SELLER INFORMATION
+=================================================== -->
+<section class="mt-8">
+
+    <div class="bg-white
+               border border-slate-200
+               rounded-3xl
+               p-5 sm:p-6">
+
+        <div class="flex items-start gap-4">
+
+            <div class="w-12 h-12
+                       shrink-0
+                       rounded-xl
+                       bg-teal-100
+                       text-teal-700
+                       flex items-center
+                       justify-center">
+
+                <i class="fa-solid fa-store"></i>
+
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center
+            sm:justify-between gap-3 min-w-0 flex-1">
+
+                <!-- INFORMASI TOKO -->
+                <div class="min-w-0 flex-1">
+
+                    <p class="text-xs text-slate-400 font-semibold
+                  uppercase tracking-wide">
+                        Dijual oleh
+                    </p>
+
+                    <h2 class="text-base md:text-lg font-black
+                   text-slate-800 mt-1 break-words">
+
+                        {% if product.seller and product.seller.seller_profile %}
+                        {{ product.seller.seller_profile.store_name
+                        or product.seller.name }}
+                        {% elif product.seller %}
+                        {{ product.seller.name }}
+                        {% else %}
+                        Pedagang Pasar Remboken
+                        {% endif %}
+
+                    </h2>
+
+                    {% if product.seller
+                    and product.seller.seller_profile
+                    and product.seller.seller_profile.store_address %}
+
+                    <p class="flex items-start gap-1.5
+                      text-xs md:text-sm text-slate-500 mt-1">
+
+                        <i class="fa-solid fa-location-dot
+                          text-teal-600 mt-0.5 shrink-0"></i>
+
+                        <span class="break-words">
+                            {{ product.seller.seller_profile.store_address }}
+                        </span>
+
+                    </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- TOMBOL KUNJUNGI TOKO -->
+                {% if product.seller and product.seller.role == 'seller' %}
+
+                <a href="{{ url_for('seller_store',
+                             seller_id=product.seller.id) }}" class="inline-flex shrink-0 items-center
+                   justify-center gap-2
+                   self-start sm:self-center
+                   px-3.5 py-2.5
+                   rounded-xl
+                   border border-teal-200
+                   bg-teal-50
+                   text-teal-700
+                   text-xs font-bold
+                   whitespace-nowrap
+                   hover:bg-teal-100
+                   hover:border-teal-300
+                   transition duration-200">
+
+                    <i class="fa-solid fa-store"></i>
+
+                    <span>Kunjungi Toko</span>
+
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+
+                </a>
+
+                {% endif %}
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     PRODUCT REVIEWS
+=================================================== -->
+<section class="mt-8">
+
+    <div class="bg-white
+               border border-slate-200
+               rounded-3xl
+               p-5 sm:p-6">
+
+
+        <div class="flex flex-col sm:flex-row
+                   sm:items-center
+                   sm:justify-between
+                   gap-3 mb-5">
+
+            <div>
+
+                <h2 class="text-xl
+                           font-black
+                           text-slate-800">
+
+                    Ulasan Pembeli
+
+                </h2>
+
+                <p class="text-sm
+                           text-slate-500
+                           mt-1">
+
+                    Pengalaman pembeli terhadap produk ini.
+
+                </p>
+
+            </div>
+
+
+            <!-- REVIEW SUMMARY -->
+            <div class="flex items-center
+                       gap-2
+                       text-sm
+                       text-slate-500">
+
+                {% if product_rating_count > 0 %}
+
+                <div class="flex items-center
+                               gap-0.5
+                               text-yellow-500">
+
+                    {% for i in range(5) %}
+
+                    {% if i < product_rating|round(0, 'floor' ) %} <i class="fa-solid fa-star"></i>
+
+                        {% else %}
+
+                        <i class="fa-regular fa-star"></i>
+
+                        {% endif %}
+
+                        {% endfor %}
+
+                </div>
+
+                <span class="font-semibold
+                               text-slate-700">
+
+                    {{ "%.1f"|format(product_rating) }}
+
+                </span>
+
+                <span class="text-slate-400">
+
+                    ({{ product_rating_count }} ulasan)
+
+                </span>
+
+                {% else %}
+
+                <i class="fa-regular fa-star
+                               text-yellow-500">
+                </i>
+
+                <span>
+                    Belum ada rating
+                </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        {% if reviews %}
+
+        <div class="space-y-4" id="reviewList">
+
+            {% for review, user in reviews %}
+
+            <div class="border
+               border-slate-200
+               rounded-2xl
+               p-4 review-item
+               {% if loop.index > 3 %}hidden{% endif %}">
+
+                <div class="flex
+                    items-start
+                    justify-between
+                    gap-3">
+
+                    <div>
+
+                        <p class="font-bold
+                          text-slate-800">
+
+                            {{ user.name }}
+
+                        </p>
+
+                        <!-- INDIVIDUAL RATING -->
+                        <div class="flex items-center
+                            gap-1
+                            text-yellow-500
+                            text-xs mt-1">
+
+                            {% for i in range(5) %}
+
+                            {% if i < review.product_rating %} <i class="fa-solid fa-star"></i>
+
+                                {% else %}
+
+                                <i class="fa-regular fa-star"></i>
+
+                                {% endif %}
+
+                                {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                    {% if review.created_at %}
+
+                    <span class="text-xs
+                             text-slate-400">
+
+                        {{ review.created_at.strftime('%d/%m/%Y') }}
+
+                    </span>
+
+                    {% endif %}
+
+                </div>
+
+                {% if review.comment %}
+
+                <p class="text-sm
+                      text-slate-600
+                      leading-relaxed
+                      mt-3">
+
+                    {{ review.comment }}
+
+                </p>
+
+                {% endif %}
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% if reviews|length > 3 %}
+
+        <div class="mt-4 text-center">
+
+            <button type="button" id="toggleReviews" class="text-sm
+                   font-bold
+                   text-teal-700
+                   hover:text-teal-800
+                   transition">
+
+                Lihat Semua Ulasan
+                <i class="fa-solid fa-chevron-down ml-1"></i>
+
+            </button>
+
+        </div>
+
+        {% endif %}
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+
+                const toggleButton = document.getElementById('toggleReviews');
+                const reviewItems = document.querySelectorAll('#reviewList .review-item');
+
+                if (!toggleButton) return;
+
+                let expanded = false;
+
+                toggleButton.addEventListener('click', function () {
+
+                    expanded = !expanded;
+
+                    reviewItems.forEach(function (item, index) {
+
+                        if (index >= 3) {
+                            item.classList.toggle('hidden', !expanded);
+                        }
+
+                    });
+
+                    toggleButton.innerHTML = expanded
+                        ? 'Lihat Lebih Sedikit <i class="fa-solid fa-chevron-up ml-1"></i>'
+                        : 'Lihat Semua Ulasan <i class="fa-solid fa-chevron-down ml-1"></i>';
+
+                });
+
+            });
+        </script>
+
+
+        {% else %}
+
+        <div class="text-center
+                       py-10
+                       bg-slate-50
+                       rounded-2xl
+                       border border-slate-100">
+
+            <div class="w-14 h-14
+                           mx-auto
+                           rounded-xl
+                           bg-white
+                           border border-slate-200
+                           text-slate-400
+                           flex items-center
+                           justify-center">
+
+                <i class="fa-regular
+                               fa-star
+                               text-xl">
+                </i>
+
+            </div>
+
+
+            <h3 class="font-bold
+                           text-slate-700
+                           mt-3">
+
+                Belum ada ulasan
+
+            </h3>
+
+
+            <p class="text-sm
+                           text-slate-500
+                           mt-1">
+
+                Belum ada pembeli yang memberikan ulasan.
+
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     OTHER PRODUCTS
+=================================================== -->
+{% if other_products %}
+
+<section class="mt-10">
+
+    <!-- SECTION HEADER -->
+    <div class="flex flex-col sm:flex-row
+                sm:items-end
+                sm:justify-between
+                gap-3
+                mb-5">
+
+        <div>
+
+            <div class="flex items-center gap-2">
+
+                <span class="w-1.5 h-7
+                             rounded-full
+                             bg-teal-700">
+                </span>
+
+                <h2 class="text-2xl
+                           font-black
+                           text-slate-800">
+                    Produk Lainnya
+                </h2>
+
+            </div>
+
+            <p class="text-sm
+                      text-slate-500
+                      mt-1
+                      ml-3.5">
+                Produk lainnya yang mungkin Anda sukai.
+            </p>
+
+        </div>
+
+        <a href="{{ url_for('catalog') }}" class="inline-flex
+                  items-center
+                  text-sm
+                  text-teal-700
+                  font-bold
+                  hover:text-teal-800
+                  transition">
+
+            Lihat semua
+
+            <i class="fa-solid fa-arrow-right ml-2"></i>
+
+        </a>
+
+    </div>
+
+
+    <!-- SCROLL AREA -->
+    <div id="otherProductScrollArea" class="max-h-[calc(100vh-270px)]
+                min-h-[300px]
+                overflow-y-auto
+                overflow-x-hidden
+                pr-1
+                pb-2
+                overscroll-contain
+                scroll-smooth">
+
+        <!-- PRODUCT GRID -->
+        <div id="otherProducts" class="grid
+                    grid-cols-2
+                    sm:grid-cols-3
+                    md:grid-cols-4
+                    lg:grid-cols-5
+                    xl:grid-cols-6
+                    gap-3">
+
+            {% for p in other_products %}
+
+            <article data-name="{{ p.name|lower }}"
+                data-store="{{ (p.seller.seller_profile.store_name if p.seller and p.seller.seller_profile and p.seller.seller_profile.store_name else p.seller.name if p.seller else 'Pedagang Pasar Remboken')|lower }}"
+                data-price="{{ p.price }}" data-stock="{{ p.stock }}"
+                data-rating="{{ p.product_rating|default(0, true) }}" class="other-product-card
+                       group
+                       bg-white
+                       border border-slate-200
+                       rounded-xl
+                       overflow-hidden
+                       transition
+                       duration-200
+                       hover:-translate-y-0.5
+                       hover:shadow-lg
+                       hover:border-slate-300">
+
+                <!-- IMAGE -->
+                <a href="{{ url_for('product_detail', pid=p.id) }}" class="block relative overflow-hidden bg-slate-100">
+
+                    {% if p.image %}
+
+                    <img src="{{ url_for('static', filename='uploads/products/' ~ p.image) }}" alt="{{ p.name }}"
+                        loading="lazy" class="w-full
+                               h-32
+                               sm:h-36
+                               md:h-40
+                               object-cover
+                               transition
+                               duration-300
+                               group-hover:scale-105">
+
+                    {% else %}
+
+                    <div class="w-full
+                                h-32
+                                sm:h-36
+                                md:h-40
+                                bg-slate-100
+                                flex
+                                items-center
+                                justify-center
+                                text-slate-300
+                                text-3xl">
+
+                        <i class="fa-solid fa-image"></i>
+
+                    </div>
+
+                    {% endif %}
+
+
+                    <!-- CATEGORY -->
+                    <div class="absolute top-2 left-2 max-w-[80%]">
+
+                        <span class="inline-flex
+                                     items-center
+                                     gap-1
+                                     px-2
+                                     py-1
+                                     rounded-md
+                                     bg-white/95
+                                     backdrop-blur-sm
+                                     shadow-sm
+                                     text-[9px]
+                                     font-bold
+                                     text-slate-600">
+
+                            <i class="fa-solid fa-tag text-teal-600"></i>
+
+                            {{ p.category.name if p.category else 'Umum' }}
+
+                        </span>
+
+                    </div>
+
+
+                    <!-- STOCK BADGE -->
+                    {% if p.stock > 0 %}
+
+                    <span class="absolute
+                                 top-2
+                                 right-2
+                                 bg-emerald-50
+                                 text-emerald-700
+                                 px-2
+                                 py-1
+                                 rounded-md
+                                 text-[9px]
+                                 font-bold">
+
+                        Tersedia
+
+                    </span>
+
+                    {% else %}
+
+                    <span class="absolute
+                                 top-2
+                                 right-2
+                                 bg-red-500
+                                 text-white
+                                 px-2
+                                 py-1
+                                 rounded-md
+                                 text-[9px]
+                                 font-bold">
+
+                        Stok Habis
+
+                    </span>
+
+                    {% endif %}
+
+                </a>
+
+
+                <!-- CONTENT -->
+                <div class="p-3">
+
+                    <!-- NAME -->
+                    <a href="{{ url_for('product_detail', pid=p.id) }}" class="block">
+
+                        <h3 class="font-black
+                                   text-xs
+                                   sm:text-sm
+                                   text-slate-900
+                                   line-clamp-2
+                                   leading-snug
+                                   hover:text-teal-700
+                                   transition">
+
+                            {{ p.name }}
+
+                        </h3>
+
+                    </a>
+
+
+                    <!-- PRICE -->
+                    <p class="text-sm
+                              sm:text-base
+                              text-teal-700
+                              font-black
+                              mt-1.5">
+
+                        {{ rupiah(p.price) }}
+
+                    </p>
+
+
+                    <!-- RATING + SOLD -->
+                    <div class="flex flex-wrap
+                                items-center
+                                gap-2
+                                mt-1.5">
+
+                        <!-- RATING -->
+                        <div class="flex items-center gap-1">
+
+                            <span class="text-amber-400 text-[11px]">★</span>
+
+                            <span class="text-[11px] font-bold text-slate-700">
+
+                                {{ '%.1f'|format(p.product_rating|default(0, true)) }}
+
+                            </span>
+
+                            <span class="text-[10px] text-slate-400">
+                                rating
+                            </span>
+
+                        </div>
+
+                        <span class="text-slate-300 text-[10px]">•</span>
+
+                        <!-- SOLD COUNT -->
+                        <span class="text-[10px] text-slate-500">
+
+                            <span class="font-bold text-slate-700">
+                                {{ p.sold_count|default(0, true) }}
+                            </span>
+
+                            terjual
+
+                        </span>
+
+                    </div>
+
+
+                    <!-- STORE -->
+                    <div class="flex
+                                items-center
+                                gap-1
+                                mt-1.5
+                                min-w-0">
+
+                        <i class="fa-solid fa-store
+                                  text-[9px]
+                                  text-slate-400
+                                  shrink-0">
+                        </i>
+
+                        <p class="text-[10px]
+                                  text-slate-500
+                                  truncate">
+
+                            {{ p.seller.seller_profile.store_name
+                            if p.seller and p.seller.seller_profile and p.seller.seller_profile.store_name
+                            else p.seller.name if p.seller
+                            else 'Pedagang Pasar Remboken' }}
+
+                        </p>
+
+                    </div>
+
+
+                    <!-- STOCK -->
+                    <div class="flex
+                                items-center
+                                justify-between
+                                gap-1
+                                mt-1.5">
+
+                        <span class="inline-flex
+                                     items-center
+                                     gap-1
+                                     text-[10px]
+                                     {% if p.stock > 0 %}
+                                     text-slate-500
+                                     {% else %}
+                                     text-red-500
+                                     {% endif %}">
+
+                            {% if p.stock > 0 %}
+
+                            <i class="fa-solid fa-box"></i>
+                            {{ p.stock }}
+
+                            {% else %}
+
+                            <i class="fa-solid fa-circle-xmark"></i>
+                            Habis
+
+                            {% endif %}
+
+                        </span>
+
+                        <a href="{{ url_for('product_detail', pid=p.id) }}" class="text-[10px]
+                                  font-bold
+                                  text-teal-700
+                                  hover:text-teal-800">
+
+                            Detail
+                            <i class="fa-solid fa-arrow-right ml-0.5"></i>
+
+                        </a>
+
+                    </div>
+
+
+                    <!-- CART -->
+                    {% if current_user.is_authenticated
+                    and current_user.role == 'buyer' %}
+
+                    {% if p.stock > 0 %}
+
+                    <form method="post" action="{{ url_for('cart_add', pid=p.id) }}" class="mt-2.5">
+
+                        <div class="flex gap-1.5">
+
+                            <input type="number" min="1" max="{{ p.stock }}" value="1" name="qty"
+                                aria-label="Jumlah {{ p.name }}" required class="w-12
+                                           sm:w-14
+                                           border
+                                           border-slate-200
+                                           rounded-lg
+                                           px-1
+                                           py-2
+                                           text-xs
+                                           font-bold
+                                           text-center
+                                           outline-none
+                                           focus:ring-2
+                                           focus:ring-teal-500
+                                           focus:border-teal-500">
+
+                            <button type="submit" class="flex-1
+                                           inline-flex
+                                           items-center
+                                           justify-center
+                                           gap-1
+                                           bg-teal-700
+                                           hover:bg-teal-800
+                                           text-white
+                                           rounded-lg
+                                           px-2
+                                           py-2
+                                           text-[10px]
+                                           sm:text-xs
+                                           font-bold
+                                           transition">
+
+                                <i class="fa-solid fa-cart-plus"></i>
+
+                                <span>Tambah</span>
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                    {% else %}
+
+                    <button type="button" disabled class="w-full
+                                   mt-2.5
+                                   bg-slate-100
+                                   text-slate-400
+                                   rounded-lg
+                                   p-2
+                                   text-[10px]
+                                   sm:text-xs
+                                   font-bold
+                                   cursor-not-allowed">
+
+                        Stok Habis
+
+                    </button>
+
+                    {% endif %}
+
+                    {% endif %}
+
+                </div>
+
+            </article>
+
+            {% else %}
+
+            <!-- EMPTY STATE -->
+            <div class="col-span-full
+                        bg-white
+                        border border-slate-200
+                        rounded-2xl
+                        p-10
+                        text-center">
+
+                <div class="w-14 h-14
+                            mx-auto
+                            rounded-xl
+                            bg-slate-100
+                            text-slate-400
+                            flex
+                            items-center
+                            justify-center
+                            mb-3">
+
+                    <i class="fa-solid fa-box-open text-xl"></i>
+
+                </div>
+
+                <h3 class="font-black text-base text-slate-800">
+                    Belum Ada Produk Lainnya
+                </h3>
+
+                <p class="text-xs text-slate-500 mt-1">
+                    Belum ada produk lain yang tersedia saat ini.
+                </p>
+
+                <a href="{{ url_for('catalog') }}" class="inline-flex
+                          items-center
+                          gap-2
+                          mt-5
+                          bg-teal-700
+                          hover:bg-teal-800
+                          text-white
+                          px-5
+                          py-2.5
+                          rounded-lg
+                          font-bold
+                          text-xs
+                          transition">
+
+                    <i class="fa-solid fa-store"></i>
+                    Jelajahi Produk
+
+                </a>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+{% endif %}
+
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+
+        /* ==================================================
+           QUANTITY
+        ================================================== */
+
+        const quantityInput =
+            document.getElementById('quantity');
+
+        const decreaseButton =
+            document.getElementById('decreaseQty');
+
+        const increaseButton =
+            document.getElementById('increaseQty');
+
+
+        if (
+            quantityInput &&
+            decreaseButton &&
+            increaseButton
+        ) {
+
+            const maxQuantity =
+                parseInt(
+                    quantityInput.getAttribute('max')
+                ) || 1;
+
+
+            decreaseButton.addEventListener(
+                'click',
+                function () {
+
+                    let value =
+                        parseInt(quantityInput.value)
+                        || 1;
+
+
+                    if (value > 1) {
+                        value--;
+                    }
+
+
+                    quantityInput.value = value;
+
+                }
+            );
+
+
+            increaseButton.addEventListener(
+                'click',
+                function () {
+
+                    let value =
+                        parseInt(quantityInput.value)
+                        || 1;
+
+
+                    if (value < maxQuantity) {
+                        value++;
+                    }
+
+
+                    quantityInput.value = value;
+
+                }
+            );
+
+
+            quantityInput.addEventListener(
+                'input',
+                function () {
+
+                    let value =
+                        parseInt(quantityInput.value)
+                        || 1;
+
+
+                    if (value < 1) {
+                        value = 1;
+                    }
+
+
+                    if (value > maxQuantity) {
+                        value = maxQuantity;
+                    }
+
+
+                    quantityInput.value = value;
+
+                }
+            );
+
+        }
+
+
+        /* ==================================================
+           PRODUCT IMAGE SLIDER
+        ================================================== */
+
+        const slides =
+            document.querySelectorAll(
+                '.product-slide'
+            );
+
+
+        const thumbnails =
+            document.querySelectorAll(
+                '.product-thumbnail'
+            );
+
+
+        const prevButton =
+            document.getElementById(
+                'prevProductImage'
+            );
+
+
+        const nextButton =
+            document.getElementById(
+                'nextProductImage'
+            );
+
+
+        const counter =
+            document.getElementById(
+                'productImageCounter'
+            );
+
+
+        if (slides.length > 1) {
+
+            let currentIndex = 0;
+
+
+            function showSlide(index) {
+
+
+                /* ==============================
+                   LOOP SLIDER
+                ============================== */
+
+                if (index < 0) {
+
+                    index =
+                        slides.length - 1;
+
+                }
+
+
+                if (index >= slides.length) {
+
+                    index = 0;
+
+                }
+
+
+                currentIndex = index;
+
+
+                /* ==============================
+                   MAIN SLIDES
+                ============================== */
+
+                slides.forEach(
+                    function (slide, i) {
+
+                        if (i === currentIndex) {
+
+                            slide.classList.remove(
+                                'opacity-0',
+                                'pointer-events-none'
+                            );
+
+
+                            slide.classList.add(
+                                'opacity-100'
+                            );
+
+                        } else {
+
+                            slide.classList.remove(
+                                'opacity-100'
+                            );
+
+
+                            slide.classList.add(
+                                'opacity-0',
+                                'pointer-events-none'
+                            );
+
+                        }
+
+                    }
+                );
+
+
+                /* ==============================
+                   THUMBNAILS
+                ============================== */
+
+                thumbnails.forEach(
+                    function (thumbnail, i) {
+
+                        if (i === currentIndex) {
+
+                            thumbnail.classList.remove(
+                                'border-transparent'
+                            );
+
+
+                            thumbnail.classList.add(
+                                'border-teal-600'
+                            );
+
+                        } else {
+
+                            thumbnail.classList.remove(
+                                'border-teal-600'
+                            );
+
+
+                            thumbnail.classList.add(
+                                'border-transparent'
+                            );
+
+                        }
+
+                    }
+                );
+
+
+                /* ==============================
+                   COUNTER
+                ============================== */
+
+                if (counter) {
+
+                    counter.textContent =
+                        (currentIndex + 1) +
+                        ' / ' +
+                        slides.length;
+
+                }
+
+            }
+
+
+            /* ==============================
+               PREVIOUS
+            ============================== */
+
+            if (prevButton) {
+
+                prevButton.addEventListener(
+                    'click',
+                    function () {
+
+                        showSlide(
+                            currentIndex - 1
+                        );
+
+                    }
+                );
+
+            }
+
+
+            /* ==============================
+               NEXT
+            ============================== */
+
+            if (nextButton) {
+
+                nextButton.addEventListener(
+                    'click',
+                    function () {
+
+                        showSlide(
+                            currentIndex + 1
+                        );
+
+                    }
+                );
+
+            }
+
+
+            /* ==============================
+               THUMBNAILS
+            ============================== */
+
+            thumbnails.forEach(
+                function (thumbnail, index) {
+
+                    thumbnail.addEventListener(
+                        'click',
+                        function () {
+
+                            showSlide(index);
+
+                        }
+                    );
+
+                }
+            );
+
+
+            /* ==============================
+               SWIPE MOBILE
+            ============================== */
+
+            const slider =
+                document.getElementById(
+                    'productImageSlider'
+                );
+
+
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+
+            if (slider) {
+
+                slider.addEventListener(
+                    'touchstart',
+                    function (event) {
+
+                        touchStartX =
+                            event.changedTouches[0]
+                                .screenX;
+
+                    },
+                    {
+                        passive: true
+                    }
+                );
+
+
+                slider.addEventListener(
+                    'touchend',
+                    function (event) {
+
+                        touchEndX =
+                            event.changedTouches[0]
+                                .screenX;
+
+
+                        const difference =
+                            touchStartX -
+                            touchEndX;
+
+
+                        /* Swipe kiri */
+
+                        if (difference > 50) {
+
+                            showSlide(
+                                currentIndex + 1
+                            );
+
+                        }
+
+
+                        /* Swipe kanan */
+
+                        if (difference < -50) {
+
+                            showSlide(
+                                currentIndex - 1
+                            );
+
+                        }
+
+                    },
+                    {
+                        passive: true
+                    }
+                );
+
+            }
+
+
+            /* ==============================
+               KEYBOARD
+            ============================== */
+
+            document.addEventListener(
+                'keydown',
+                function (event) {
+
+                    if (
+                        event.key === 'ArrowLeft'
+                    ) {
+
+                        showSlide(
+                            currentIndex - 1
+                        );
+
+                    }
+
+
+                    if (
+                        event.key === 'ArrowRight'
+                    ) {
+
+                        showSlide(
+                            currentIndex + 1
+                        );
+
+                    }
+
+                }
+            );
+
+
+            /* ==============================
+               INITIAL
+            ============================== */
+
+            showSlide(0);
+
+        }
+
+    });
+
+</script>
+
+{% endblock %}
